@@ -2043,7 +2043,7 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
         <.demo_section
           title="Dense (inspector rail)"
-          description="layout=&quot;dense&quot; is the label-column + value grid used inside inspector."
+          description={~s(layout="dense" is the label-column + value grid used inside inspector.)}
           code={~S'''
           <.description_list layout="dense">
             <:item label="Repo">enventory_new</:item>
@@ -2105,7 +2105,7 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
         <.demo_section
           title="Underline variant"
-          description="variant=&quot;underline&quot; with size sm — good for page-level tabs."
+          description={~s(variant="underline" with size sm — good for page-level tabs.)}
           code={~S'''
           <.tabs_list active_tab="b" variant="underline" size="sm">
             <:tab name="a">Underline</:tab>
@@ -2120,7 +2120,7 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
         <.demo_section
           title="Segmented"
-          description="Standalone pill control with no panels. Give the list an id so LanternTabs handles arrow keys; pass role=&quot;radiogroup&quot; when there is no tab panel."
+          description={~s(Standalone pill control with no panels. Give the list an id so LanternTabs handles arrow keys; pass role="radiogroup" when there is no tab panel.)}
           code={~S'''
           <.tabs_list
             id="scope"
@@ -3042,7 +3042,7 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
         <.demo_section
           title="Ring"
-          description="shape=&quot;ring&quot; is an SVG completion circle. completed/scope is the flicker-shaped alias of value/max. The track uses --lantern-border-strong so 7/19 stays readable."
+          description={~s(shape="ring" is an SVG completion circle. completed/scope is the flicker-shaped alias of value/max. The track uses --lantern-border-strong so 7/19 stays readable.)}
           code={~S'''
           <.progress shape="ring" value={7} max={19} label="Completion">7 / 19</.progress>
           <.progress shape="ring" completed={7} scope={19} size="sm" label="Progress" />
@@ -3142,7 +3142,7 @@ defmodule LanternDemoWeb.ComponentsLive do
           </.scroll_area>
           '''}
         >
-          <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav class="docs-scroll-demo">
+          <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav>
             <GroupBand.group_band
               name="In progress"
               count={2}

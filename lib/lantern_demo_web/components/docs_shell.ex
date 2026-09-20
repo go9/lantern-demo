@@ -160,6 +160,10 @@ defmodule LanternDemoWeb.DocsShell do
       .lui-app-main .demo-hero { margin-bottom: 1rem; }
       .lui-app-main .demo-title { font-size: 1.5rem; }
       .lui-app-main .demo-eyebrow { display: none; }
+
+      /* lantern_ui 0.8.2: .lui-list-row { display:flex } beats the UA [hidden] rule,
+         so group_band collapse would leave rows on screen without this. */
+      .lui-list-row[hidden] { display: none; }
     </style>
     """
   end
