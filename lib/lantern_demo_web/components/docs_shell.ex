@@ -19,6 +19,17 @@ defmodule LanternDemoWeb.DocsShell do
 
   @component_groups [
     {"Layout", [{"app-shell", "App shell"}, {"navlist", "Nav list"}]},
+    {"Dense app",
+     [
+       {"list-row", "List row"},
+       {"group-band", "Group band"},
+       {"inspector", "Inspector"},
+       {"icon-button", "Icon button"},
+       {"segmented", "Segmented"},
+       {"state-glyph", "State glyph"},
+       {"progress-ring", "Progress ring"},
+       {"side-panel", "Side panel"}
+     ]},
     {"Theming", [{"theming", "Theming"}]},
     {"Data",
      [
@@ -157,6 +168,14 @@ defmodule LanternDemoWeb.DocsShell do
 
   @icons %{
     "app-shell" => "view-columns",
+    "list-row" => "bars-3",
+    "group-band" => "folder",
+    "inspector" => "information-circle",
+    "icon-button" => "cursor-arrow-rays",
+    "segmented" => "view-columns",
+    "state-glyph" => "check-circle",
+    "progress-ring" => "chart-bar",
+    "side-panel" => "window",
     "theming" => "sparkles",
     "data-table" => "circle-stack",
     "table" => "bars-3",
