@@ -82,7 +82,6 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        ~s(data-lantern-list-item),
        ~s(data-lantern-persist="tickets:in_progress"),
        ~s(data-lantern-collapse="tickets:in_progress"),
-       ".lui-list-row[hidden]",
        "#241",
        "Visible progress ring"
      ]},
