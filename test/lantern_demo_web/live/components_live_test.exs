@@ -73,6 +73,48 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        ~s(data-orientation="horizontal"),
        ~s(data-orientation="both"),
        ~s(tabindex="0")
+     ]},
+    {"list-row",
+     [
+       "<h1>List row</h1>",
+       ~s(data-lantern-list-nav),
+       ~s(data-lantern-list-item),
+       "#241",
+       "Visible progress ring"
+     ]},
+    {"group-band", ["<h1>Group band</h1>", "lui-group-band", "In progress", "Done"]},
+    {"inspector",
+     ["<h1>Inspector</h1>", ~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
+    {"icon-button", ["<h1>Icon button</h1>", ~s(aria-label="Filter"), ~s(aria-label="Display")]},
+    {"segmented",
+     [
+       "<h1>Segmented</h1>",
+       ~s(id="dense-scope"),
+       ~s(role="radiogroup"),
+       ~s(phx-hook="LanternSegmented")
+     ]},
+    {"state-glyph",
+     [
+       "<h1>State glyph</h1>",
+       ~s(data-kind="status"),
+       ~s(data-kind="priority"),
+       ~s(data-kind="run"),
+       ~s(data-kind="sync"),
+       ~s(data-kind="source")
+     ]},
+    {"progress-ring",
+     [
+       "<h1>Progress ring</h1>",
+       ~s(role="progressbar"),
+       ~s(aria-label="Completion"),
+       "7 / 19"
+     ]},
+    {"side-panel",
+     [
+       "<h1>Side panel</h1>",
+       ~s(id="tickets-panel"),
+       ~s(phx-hook="LanternSidePanel"),
+       ~s(data-lantern-persist="demo:side-filters")
      ]}
   ]
 
@@ -105,6 +147,14 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert html =~ ~s(href="/components/color-input")
     assert html =~ ~s(href="/components/progress-meter")
     assert html =~ ~s(href="/components/scroll-area")
+    assert html =~ ~s(href="/components/list-row")
+    assert html =~ ~s(href="/components/group-band")
+    assert html =~ ~s(href="/components/inspector")
+    assert html =~ ~s(href="/components/icon-button")
+    assert html =~ ~s(href="/components/segmented")
+    assert html =~ ~s(href="/components/state-glyph")
+    assert html =~ ~s(href="/components/progress-ring")
+    assert html =~ ~s(href="/components/side-panel")
   end
 
   test "chat kit controls change the transcript and busy state" do
@@ -235,6 +285,16 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert source =~ "nav.scrollTop = Number(saved.top)"
     assert source =~ "nav.scrollLeft = Number(saved.left)"
     assert source =~ "this.saveSidebarScroll()"
+  end
+
+  test "serves lantern_ui_hooks.js from the Hex lantern_ui package" do
+    hex_path = Application.app_dir(:lantern_ui, "priv/static/lantern_ui_hooks.js")
+    assert File.exists?(hex_path)
+
+    conn = build_conn() |> get("/lantern_ui_hooks.js")
+    assert conn.status == 200
+    assert conn.resp_body != ""
+    assert File.read!(hex_path) == conn.resp_body
   end
 
   defp mount_components do

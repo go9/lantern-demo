@@ -3,6 +3,7 @@ name: Deploy Demo
 on:
   push:
     branches: [main]
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -30,6 +31,7 @@ jobs:
 
   deploy:
     needs: test
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read

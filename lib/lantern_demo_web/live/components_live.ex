@@ -25,8 +25,12 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Dropdown
   alias LanternUI.Components.EmptyState
   alias LanternUI.Components.Form
+  alias LanternUI.Components.GroupBand
   alias LanternUI.Components.Icon
+  alias LanternUI.Components.IconButton
+  alias LanternUI.Components.Inspector
   alias LanternUI.Components.Layout
+  alias LanternUI.Components.ListRow
   alias LanternUI.Components.Loading
   alias LanternUI.Components.Modal
   alias LanternUI.Components.Message
@@ -34,6 +38,7 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Menu
   alias LanternUI.Components.Popover
   alias LanternUI.Components.Progress
+  alias LanternUI.Components.ProgressRing
   alias LanternUI.Components.Meter
   alias LanternUI.Components.ResourceList
   alias LanternUI.Components.ColorInput
@@ -42,11 +47,14 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Navlist
   alias LanternUI.Components.Pagination
   alias LanternUI.Components.Radio
+  alias LanternUI.Components.Segmented
   alias LanternUI.Components.Select
   alias LanternUI.Components.Separator
+  alias LanternUI.Components.SidePanel
   alias LanternUI.Components.Sheet
   alias LanternUI.Components.Skeleton
   alias LanternUI.Components.Stat
+  alias LanternUI.Components.StateGlyph
   alias LanternUI.Components.Switch
   alias LanternUI.Components.Table
   alias LanternUI.Components.Tabs
@@ -224,7 +232,26 @@ defmodule LanternDemoWeb.ComponentsLive do
     "area-chart" => [{Charts, :area_chart}],
     "line-chart" => [{Charts, :line_chart}],
     "bar-chart" => [{Charts, :bar_chart}],
-    "sparkline" => [{Charts, :sparkline}]
+    "sparkline" => [{Charts, :sparkline}],
+    "list-row" => [{ListRow, :list_row}],
+    "group-band" => [{GroupBand, :group_band}],
+    "inspector" => [
+      {Inspector, :inspector},
+      {Inspector, :inspector_section},
+      {Inspector, :property_row}
+    ],
+    "icon-button" => [{IconButton, :icon_button}],
+    "segmented" => [{Segmented, :segmented}],
+    "state-glyph" => [
+      {StateGlyph, :state_glyph},
+      {StateGlyph, :status_glyph},
+      {StateGlyph, :priority_glyph},
+      {StateGlyph, :run_glyph},
+      {StateGlyph, :sync_glyph},
+      {StateGlyph, :source_glyph}
+    ],
+    "progress-ring" => [{ProgressRing, :progress_ring}],
+    "side-panel" => [{SidePanel, :side_panel}, {SidePanel, :side_panel_toggle}]
   }
 
   # Snippets retained for pages that still use the single-blob format
@@ -410,6 +437,8 @@ defmodule LanternDemoWeb.ComponentsLive do
        chat_demo_messages: @chat_demo_messages,
        chat_demo_busy: false,
        chat_demo_next_reply: 8,
+       dense_scope: "all",
+       panel_open: true,
        range_form:
          Phoenix.Component.to_form(%{"from" => "2026-08-01", "to" => "2026-08-07"}, as: :range)
      )}
@@ -496,6 +525,18 @@ defmodule LanternDemoWeb.ComponentsLive do
 
   def handle_event("chat_reset", _params, socket) do
     {:noreply, assign(socket, chat_demo_messages: @chat_demo_messages, chat_demo_busy: false)}
+  end
+
+  def handle_event("set_dense_scope", %{"segment" => scope}, socket) do
+    {:noreply, assign(socket, :dense_scope, scope)}
+  end
+
+  def handle_event("toggle_panel", _params, socket) do
+    {:noreply, update(socket, :panel_open, &(!&1))}
+  end
+
+  def handle_event("set_panel", %{"open" => open}, socket) do
+    {:noreply, assign(socket, :panel_open, open == true or open == "true")}
   end
 
   def render(assigns) do
@@ -2912,6 +2953,347 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
       </article>
 
+      <article :if={@current == "list-row"} class="docs-body">
+        <h1>List row</h1>
+        <p>
+          Dense issue/inbox row: leading glyph, muted mono id, truncating title,
+          meta, trailing. Put <code>data-lantern-list-nav</code> on the list and
+          <code>data-lantern-list-item</code> on each row for j/k keyboard nav.
+        </p>
+        <.demo_section
+          title="Keyboard-navigable list"
+          description="Focus the list, then j/k or arrows move the ring. Enter follows the row link."
+          code={~S'''
+          <.scroll_area label="Tickets" data-lantern-list-nav>
+            <.list_row
+              identifier="#241"
+              title="Visible progress ring"
+              parent="Dense primitives"
+              href="/components/list-row"
+              selected
+              data-lantern-list-item
+            >
+              <:leading>
+                <.priority_glyph priority={:high} />
+                <.status_glyph status={:in_progress} />
+              </:leading>
+              <:meta><.badge size="sm">ui</.badge></:meta>
+              <:trailing>Sep 3</:trailing>
+            </.list_row>
+            <.list_row
+              identifier="#238"
+              title="Inspector rail"
+              href="/components/inspector"
+              data-lantern-list-item
+            >
+              <:leading><.status_glyph status={:todo} /></:leading>
+              <:meta><.badge size="sm">docs</.badge></:meta>
+              <:trailing>Sep 1</:trailing>
+            </.list_row>
+          </.scroll_area>
+          '''}
+        >
+          <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav class="docs-scroll-demo">
+            <ListRow.list_row
+              identifier="#241"
+              title="Visible progress ring"
+              parent="Dense primitives"
+              href="/components/list-row"
+              selected
+              data-lantern-list-item
+            >
+              <:leading>
+                <StateGlyph.priority_glyph priority={:high} />
+                <StateGlyph.status_glyph status={:in_progress} />
+              </:leading>
+              <:meta>
+                <Badge.badge size="sm">ui</Badge.badge>
+              </:meta>
+              <:trailing>Sep 3</:trailing>
+            </ListRow.list_row>
+            <ListRow.list_row
+              identifier="#238"
+              title="Inspector rail"
+              href="/components/inspector"
+              data-lantern-list-item
+            >
+              <:leading>
+                <StateGlyph.status_glyph status={:todo} />
+              </:leading>
+              <:meta>
+                <Badge.badge size="sm">docs</Badge.badge>
+              </:meta>
+              <:trailing>Sep 1</:trailing>
+            </ListRow.list_row>
+          </ScrollArea.scroll_area>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "group-band"} class="docs-body">
+        <h1>Group band</h1>
+        <p>
+          Tinted full-width group header: chevron, glyph, name, count, and a trailing
+          action. Collapsed bands point the chevron right.
+        </p>
+        <.demo_section
+          title="Expanded and collapsed"
+          description="The + action files into this group. A collapsed band with patch/navigate uses the name row as the expand control."
+          code={~S'''
+          <.group_band name="In progress" count={12}>
+            <:glyph><.status_glyph status={:in_progress} /></:glyph>
+            <:action href="/components/group-band" label="New ticket in In progress">
+              <.icon name="plus" />
+            </:action>
+          </.group_band>
+          <.group_band name="Done" count={40} collapsed href="/components/group-band">
+            <:glyph><.status_glyph status={:done} /></:glyph>
+          </.group_band>
+          '''}
+        >
+          <GroupBand.group_band name="In progress" count={12}>
+            <:glyph>
+              <StateGlyph.status_glyph status={:in_progress} />
+            </:glyph>
+            <:action href="/components/group-band" label="New ticket in In progress">
+              <Icon.icon name="plus" />
+            </:action>
+          </GroupBand.group_band>
+          <GroupBand.group_band name="Done" count={40} collapsed href="/components/group-band">
+            <:glyph>
+              <StateGlyph.status_glyph status={:done} />
+            </:glyph>
+          </GroupBand.group_band>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "inspector"} class="docs-body">
+        <h1>Inspector</h1>
+        <p>
+          Sticky right-rail: <code>inspector</code> wraps
+          <code>inspector_section</code> headings and <code>property_row</code>
+          label/value rows. The value may be text or any inline control.
+        </p>
+        <.demo_section
+          title="Properties rail"
+          description="Section headings stay uppercase; values can hold badges or other lantern controls."
+          code={~S'''
+          <.inspector aria-label="Ticket">
+            <.inspector_section title="Properties">
+              <.property_row label="Repo">enventory_new</.property_row>
+              <.property_row label="Status">in_progress</.property_row>
+              <.property_row label="Tags">
+                <.badge size="sm">ui</.badge>
+              </.property_row>
+            </.inspector_section>
+          </.inspector>
+          '''}
+        >
+          <Inspector.inspector aria-label="Ticket">
+            <Inspector.inspector_section title="Properties">
+              <Inspector.property_row label="Repo">enventory_new</Inspector.property_row>
+              <Inspector.property_row label="Status">in_progress</Inspector.property_row>
+              <Inspector.property_row label="Tags">
+                <Badge.badge size="sm">ui</Badge.badge>
+              </Inspector.property_row>
+            </Inspector.inspector_section>
+          </Inspector.inspector>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "icon-button"} class="docs-body">
+        <h1>Icon button</h1>
+        <p>
+          Icon-only button with a required accessible label, a tooltip, and an
+          optional keyboard hint.
+        </p>
+        <.demo_section
+          title="Variants and kbd hints"
+          description="ghost (default), outline, and primary. kbd shows in the tooltip after the label."
+          code={~S'''
+          <.icon_button label="Filter" kbd="F">
+            <.icon name="funnel" />
+          </.icon_button>
+          <.icon_button label="Display" kbd="D" variant="outline">
+            <.icon name="adjustments-horizontal" />
+          </.icon_button>
+          <.icon_button label="Promote to ticket" kbd="P" variant="primary">
+            <.icon name="arrow-up-tray" />
+          </.icon_button>
+          '''}
+        >
+          <div class="docs-row">
+            <IconButton.icon_button label="Filter" kbd="F">
+              <Icon.icon name="funnel" />
+            </IconButton.icon_button>
+            <IconButton.icon_button label="Display" kbd="D" variant="outline">
+              <Icon.icon name="adjustments-horizontal" />
+            </IconButton.icon_button>
+            <IconButton.icon_button label="Promote to ticket" kbd="P" variant="primary">
+              <Icon.icon name="arrow-up-tray" />
+            </IconButton.icon_button>
+          </div>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "segmented"} class="docs-body">
+        <h1>Segmented</h1>
+        <p>
+          Compact All · Active · Backlog control. Not tabs — there is no panel.
+          Arrow keys move and activate the next segment.
+        </p>
+        <.demo_section
+          title="View scope"
+          description="phx-click segments stay on this page; the active value is highlighted."
+          code={~S'''
+          <.segmented id="scope" value={@scope} label="View">
+            <:segment value="all" phx-click="set_dense_scope">All</:segment>
+            <:segment value="active" phx-click="set_dense_scope">Active</:segment>
+            <:segment value="backlog" phx-click="set_dense_scope">Backlog</:segment>
+          </.segmented>
+          '''}
+        >
+          <Segmented.segmented id="dense-scope" value={@dense_scope} label="View">
+            <:segment value="all" phx-click="set_dense_scope">All</:segment>
+            <:segment value="active" phx-click="set_dense_scope">Active</:segment>
+            <:segment value="backlog" phx-click="set_dense_scope">Backlog</:segment>
+          </Segmented.segmented>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "state-glyph"} class="docs-body">
+        <h1>State glyph</h1>
+        <p>
+          Status, priority, run, sync, and source sets for dense lists.
+          <code>:selected_for_dev</code> draws the same empty ring as <code>:todo</code>.
+        </p>
+        <.demo_section
+          title="Five sets"
+          description="status / priority / run / sync / source side by side. Aliases (status_glyph, priority_glyph, …) take flicker-shaped assigns."
+          code={~S'''
+          <.status_glyph status={:in_progress} />
+          <.priority_glyph priority={:high} />
+          <.run_glyph state={:verifying} />
+          <.sync_glyph state={:live} />
+          <.source_glyph source={:repo} />
+          '''}
+        >
+          <div class="docs-row docs-glyph-sets">
+            <div class="docs-glyph-set">
+              <code>status</code>
+              <StateGlyph.status_glyph :for={s <- [:backlog, :todo, :in_progress, :done, :cancelled]} status={s} label={to_string(s)} />
+            </div>
+            <div class="docs-glyph-set">
+              <code>priority</code>
+              <StateGlyph.priority_glyph :for={p <- [:urgent, :high, :medium, :low, :none]} priority={p} label={to_string(p)} />
+            </div>
+            <div class="docs-glyph-set">
+              <code>run</code>
+              <StateGlyph.run_glyph
+                :for={s <- [:queued, :claiming_env, :running, :verifying, :passed, :failed, :blocked]}
+                state={s}
+                label={to_string(s)}
+              />
+            </div>
+            <div class="docs-glyph-set">
+              <code>sync</code>
+              <StateGlyph.sync_glyph :for={s <- [:empty, :syncing, :live, :failed]} state={s} label={to_string(s)} />
+            </div>
+            <div class="docs-glyph-set">
+              <code>source</code>
+              <StateGlyph.source_glyph :for={s <- [:repo, :doc, :ticket_memory, :upload]} source={s} label={to_string(s)} />
+            </div>
+          </div>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "progress-ring"} class="docs-body">
+        <h1>Progress ring</h1>
+        <p>
+          SVG completion ring with a visible muted track and a thicker progress
+          stroke. <code>completed</code>/<code>scope</code> is the flicker-shaped
+          alias of <code>value</code>/<code>max</code>.
+        </p>
+        <.demo_section
+          title="Value and alias"
+          description="7/19 stays readable because the track uses --lantern-border-strong."
+          code={~S'''
+          <.progress_ring value={7} max={19} label="Completion">7 / 19</.progress_ring>
+          <.progress_ring completed={7} scope={19} size="sm" label="Progress" />
+          '''}
+        >
+          <div class="docs-row">
+            <ProgressRing.progress_ring value={7} max={19} label="Completion">
+              7 / 19
+            </ProgressRing.progress_ring>
+            <ProgressRing.progress_ring completed={7} scope={19} size="sm" label="Progress" />
+          </div>
+        </.demo_section>
+      </article>
+
+      <article :if={@current == "side-panel"} class="docs-body">
+        <h1>Side panel</h1>
+        <p>
+          Collapsible right-hand panel plus a toggle that remembers open/closed in
+          <code>localStorage</code>. Pair <code>side_panel_toggle</code> with
+          <code>side_panel</code>. Markup-only persist uses
+          <code>data-lantern-persist</code> on a different key.
+        </p>
+        <.demo_section
+          title="Toggle and panel"
+          description="Handle toggle_panel and set_panel. The hook restores the last choice; empty storage defaults open at ≥1280px."
+          code={~S'''
+          <.side_panel_toggle
+            id="tickets-panel-toggle"
+            panel_id="tickets-panel"
+            panel_key="tickets-demo"
+            open={@panel_open}
+            phx-click="toggle_panel"
+            kbd="]"
+          />
+          <.side_panel id="tickets-panel" open={@panel_open} aria-label="Project panel">
+            <.inspector aria-label="Ticket">
+              <.inspector_section title="Properties">
+                <.property_row label="Status">in_progress</.property_row>
+              </.inspector_section>
+            </.inspector>
+          </.side_panel>
+          '''}
+        >
+          <div class="docs-row">
+            <SidePanel.side_panel_toggle
+              id="tickets-panel-toggle"
+              panel_id="tickets-panel"
+              panel_key="tickets-demo"
+              open={@panel_open}
+              phx-click="toggle_panel"
+              kbd="]"
+            />
+          </div>
+          <SidePanel.side_panel id="tickets-panel" open={@panel_open} aria-label="Project panel">
+            <Inspector.inspector aria-label="Ticket">
+              <Inspector.inspector_section title="Properties">
+                <Inspector.property_row label="Status">in_progress</Inspector.property_row>
+              </Inspector.inspector_section>
+            </Inspector.inspector>
+          </SidePanel.side_panel>
+        </.demo_section>
+        <.demo_section
+          title="Markup persist"
+          description="data-lantern-persist stores open/closed without a LiveView hook. Do not share a key with side_panel_toggle."
+          code={~S'''
+          <details data-lantern-persist="demo:side-filters">
+            <summary>Filters</summary>
+            Status, priority, and assignee.
+          </details>
+          '''}
+        >
+          <details data-lantern-persist="demo:side-filters">
+            <summary>Filters</summary>
+            Status, priority, and assignee.
+          </details>
+        </.demo_section>
+      </article>
+
       <.api_section current={@current} />
 
       <style>
@@ -2982,6 +3364,9 @@ defmodule LanternDemoWeb.ComponentsLive do
           background: var(--lantern-surface); }
         .docs-caption { font-size: .8125rem; color: var(--lantern-fg-muted); margin: 0; }
         .docs-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+        .docs-glyph-sets { align-items: flex-start; }
+        .docs-glyph-set { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; min-width: 8rem; }
+        .docs-glyph-set > code { width: 100%; font-size: .625rem; color: var(--lantern-fg-subtle); }
         .docs-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
         .docs-option-rich { display: flex; align-items: baseline; justify-content: space-between;
           gap: 1rem; width: 100%; min-width: 0; }
