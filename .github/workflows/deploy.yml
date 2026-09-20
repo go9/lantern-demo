@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: go9/lantern-demo
+  IMAGE_NAME: go9/lantern-demo-app
 
 jobs:
   test:

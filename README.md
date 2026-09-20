@@ -32,6 +32,6 @@ Requires Elixir 1.18.4 / OTP 28 (see `.tool-versions`).
 
 ## Deploy
 
-Push to `main`. GitHub Actions compiles, builds `ghcr.io/go9/lantern-demo`, and deploys the flicker app `lantern-demo` (project `lantern-ui`).
+Push to `main`. GitHub Actions compiles, builds `ghcr.io/go9/lantern-demo-app`, and deploys the flicker app `lantern-demo` (project `lantern-ui`).
 
 The repo needs a `FLICKER_TOKEN` GitHub Actions secret (flicker API token). Without it the deploy step fails after the image push.
