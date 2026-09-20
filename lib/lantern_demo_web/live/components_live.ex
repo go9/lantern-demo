@@ -22,12 +22,12 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Command
   alias LanternUI.Components.DatePicker
   alias LanternUI.Components.DatetimeField
+  alias LanternUI.Components.DescriptionList
   alias LanternUI.Components.Dropdown
   alias LanternUI.Components.EmptyState
   alias LanternUI.Components.Form
   alias LanternUI.Components.GroupBand
   alias LanternUI.Components.Icon
-  alias LanternUI.Components.IconButton
   alias LanternUI.Components.Inspector
   alias LanternUI.Components.Layout
   alias LanternUI.Components.ListRow
@@ -38,7 +38,6 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Menu
   alias LanternUI.Components.Popover
   alias LanternUI.Components.Progress
-  alias LanternUI.Components.ProgressRing
   alias LanternUI.Components.Meter
   alias LanternUI.Components.ResourceList
   alias LanternUI.Components.ColorInput
@@ -47,7 +46,6 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Navlist
   alias LanternUI.Components.Pagination
   alias LanternUI.Components.Radio
-  alias LanternUI.Components.Segmented
   alias LanternUI.Components.Select
   alias LanternUI.Components.Separator
   alias LanternUI.Components.SidePanel
@@ -160,6 +158,7 @@ defmodule LanternDemoWeb.ComponentsLive do
     ],
     "navlist" => [{Navlist, :navlist}, {Navlist, :navheading}, {Navlist, :navlink}],
     "table" => [{Table, :table}, {Table, :table_head}, {Table, :table_body}, {Table, :table_row}],
+    "description-list" => [{DescriptionList, :description_list}],
     "pagination" => [{Pagination, :pagination}],
     "tabs" => [{Tabs, :tabs_list}, {Tabs, :tabs_panel}],
     "select" => [{Select, :select}],
@@ -237,11 +236,8 @@ defmodule LanternDemoWeb.ComponentsLive do
     "group-band" => [{GroupBand, :group_band}],
     "inspector" => [
       {Inspector, :inspector},
-      {Inspector, :inspector_section},
-      {Inspector, :property_row}
+      {Inspector, :inspector_section}
     ],
-    "icon-button" => [{IconButton, :icon_button}],
-    "segmented" => [{Segmented, :segmented}],
     "state-glyph" => [
       {StateGlyph, :state_glyph},
       {StateGlyph, :status_glyph},
@@ -250,7 +246,6 @@ defmodule LanternDemoWeb.ComponentsLive do
       {StateGlyph, :sync_glyph},
       {StateGlyph, :source_glyph}
     ],
-    "progress-ring" => [{ProgressRing, :progress_ring}],
     "side-panel" => [{SidePanel, :side_panel}, {SidePanel, :side_panel_toggle}]
   }
 
@@ -527,7 +522,8 @@ defmodule LanternDemoWeb.ComponentsLive do
     {:noreply, assign(socket, chat_demo_messages: @chat_demo_messages, chat_demo_busy: false)}
   end
 
-  def handle_event("set_dense_scope", %{"segment" => scope}, socket) do
+  def handle_event("set_dense_scope", params, socket) do
+    scope = params["tab"] || params["segment"]
     {:noreply, assign(socket, :dense_scope, scope)}
   end
 
@@ -834,6 +830,33 @@ defmodule LanternDemoWeb.ComponentsLive do
               <Button.button>Months</Button.button>
               <Button.button>Days</Button.button>
             </Button.button_group>
+          </div>
+        </.demo_section>
+        <.demo_section
+          title="Icon buttons with label + kbd"
+          description="On icon-* sizes, label is the accessible name and tooltip; kbd is the optional hint in that tip. variant ghost/outline/solid."
+          code={~S'''
+          <.button size="icon" variant="ghost" label="Filter" kbd="F">
+            <.icon name="funnel" />
+          </.button>
+          <.button size="icon" variant="outline" label="Display" kbd="D">
+            <.icon name="adjustments-horizontal" />
+          </.button>
+          <.button size="icon" variant="solid" label="Promote to ticket" kbd="P">
+            <.icon name="arrow-up-tray" />
+          </.button>
+          '''}
+        >
+          <div class="docs-row">
+            <Button.button size="icon" variant="ghost" label="Filter" kbd="F">
+              <Icon.icon name="funnel" />
+            </Button.button>
+            <Button.button size="icon" variant="outline" label="Display" kbd="D">
+              <Icon.icon name="adjustments-horizontal" />
+            </Button.button>
+            <Button.button size="icon" variant="solid" label="Promote to ticket" kbd="P">
+              <Icon.icon name="arrow-up-tray" />
+            </Button.button>
           </div>
         </.demo_section>
       </article>
@@ -1994,6 +2017,51 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
       </article>
 
+      <article :if={@current == "description-list"} class="docs-body">
+        <h1>Description list</h1>
+        <p>
+          Label/value pairs for a record's detail view. <code>layout="stacked"</code>
+          (default) puts the label above the value; <code>inline</code> puts it
+          alongside; <code>layout="dense"</code> is the inspector-rail grid.
+        </p>
+        <.demo_section
+          title="Stacked"
+          description="columns sets how many pairs sit side by side on a wide viewport."
+          code={~S'''
+          <.description_list>
+            <:item label="Created">Jan 4, 2026</:item>
+            <:item label="Host">Alex Smith</:item>
+            <:item label="Description" wide>Long free text…</:item>
+          </.description_list>
+          '''}
+        >
+          <DescriptionList.description_list>
+            <:item label="Created">Jan 4, 2026</:item>
+            <:item label="Host">Alex Smith</:item>
+            <:item label="Description" wide>Long free text…</:item>
+          </DescriptionList.description_list>
+        </.demo_section>
+        <.demo_section
+          title="Dense (inspector rail)"
+          description={~s(layout="dense" is the label-column + value grid used inside inspector.)}
+          code={~S'''
+          <.description_list layout="dense">
+            <:item label="Repo">enventory_new</:item>
+            <:item label="Status">in_progress</:item>
+            <:item label="Tags"><.badge size="sm">ui</.badge></:item>
+          </.description_list>
+          '''}
+        >
+          <DescriptionList.description_list layout="dense">
+            <:item label="Repo">enventory_new</:item>
+            <:item label="Status">in_progress</:item>
+            <:item label="Tags">
+              <Badge.badge size="sm">ui</Badge.badge>
+            </:item>
+          </DescriptionList.description_list>
+        </.demo_section>
+      </article>
+
       <article :if={@current == "tabs"} class="docs-body">
         <h1>Tabs</h1>
         <p>
@@ -2037,7 +2105,7 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
         <.demo_section
           title="Underline variant"
-          description="variant=&quot;underline&quot; with size sm — good for page-level tabs."
+          description={~s(variant="underline" with size sm — good for page-level tabs.)}
           code={~S'''
           <.tabs_list active_tab="b" variant="underline" size="sm">
             <:tab name="a">Underline</:tab>
@@ -2048,6 +2116,37 @@ defmodule LanternDemoWeb.ComponentsLive do
           <Tabs.tabs_list active_tab="b" variant="underline" size="sm">
             <:tab name="a">Underline</:tab>
             <:tab name="b">Variant</:tab>
+          </Tabs.tabs_list>
+        </.demo_section>
+        <.demo_section
+          title="Segmented"
+          description={~s(Standalone pill control with no panels. Give the list an id so LanternTabs handles arrow keys; pass role="radiogroup" when there is no tab panel.)}
+          code={~S'''
+          <.tabs_list
+            id="scope"
+            variant="segmented"
+            size="sm"
+            active_tab={@scope}
+            aria-label="View"
+            role="radiogroup"
+          >
+            <:tab name="all" phx-click="set_dense_scope">All</:tab>
+            <:tab name="active" phx-click="set_dense_scope">Active</:tab>
+            <:tab name="backlog" phx-click="set_dense_scope">Backlog</:tab>
+          </.tabs_list>
+          '''}
+        >
+          <Tabs.tabs_list
+            id="dense-scope"
+            variant="segmented"
+            size="sm"
+            active_tab={@dense_scope}
+            aria-label="View"
+            role="radiogroup"
+          >
+            <:tab name="all" phx-click="set_dense_scope">All</:tab>
+            <:tab name="active" phx-click="set_dense_scope">Active</:tab>
+            <:tab name="backlog" phx-click="set_dense_scope">Backlog</:tab>
           </Tabs.tabs_list>
         </.demo_section>
       </article>
@@ -2941,6 +3040,21 @@ defmodule LanternDemoWeb.ComponentsLive do
         <.demo_section title="Measurements" description="Meter exposes min, max, value, and semantic range regions." code={~s"<.meter value={72} min={0} max={100} low={30} high={80} optimum={50} label=\"CPU load\" />"}>
           <Meter.meter value={72} min={0} max={100} low={30} high={80} optimum={50} label="CPU load" value_text="72 percent" />
         </.demo_section>
+        <.demo_section
+          title="Ring"
+          description={~s(shape="ring" is an SVG completion circle. completed/scope is the flicker-shaped alias of value/max. The track uses --lantern-border-strong so 7/19 stays readable.)}
+          code={~S'''
+          <.progress shape="ring" value={7} max={19} label="Completion">7 / 19</.progress>
+          <.progress shape="ring" completed={7} scope={19} size="sm" label="Progress" />
+          '''}
+        >
+          <div class="docs-row">
+            <Progress.progress shape="ring" value={7} max={19} label="Completion">
+              7 / 19
+            </Progress.progress>
+            <Progress.progress shape="ring" completed={7} scope={19} size="sm" label="Progress" />
+          </div>
+        </.demo_section>
       </article>
 
       <article :if={@current == "scroll-area"} class="docs-body">
@@ -2957,15 +3071,31 @@ defmodule LanternDemoWeb.ComponentsLive do
         <h1>List row</h1>
         <p>
           Dense issue/inbox row: leading glyph, muted mono id, truncating title,
-          meta, trailing. Put <code>data-lantern-list-nav</code> on the list and
+          meta, trailing. Pair with <code>group_band</code> using matching
+          <code>group</code> keys so a band click collapses its rows. Put
+          <code>data-lantern-persist</code> on each band (same key as
+          <code>group</code>) so the collapsed set survives patches. Put
+          <code>data-lantern-list-nav</code> on the list and
           <code>data-lantern-list-item</code> on each row for j/k keyboard nav.
         </p>
         <.demo_section
-          title="Keyboard-navigable list"
-          description="Focus the list, then j/k or arrows move the ring. Enter follows the row link."
+          title="Grouped list"
+          description="Click a band to collapse its rows. Focus the list, then j/k or arrows move the ring. Enter follows the row link."
           code={~S'''
           <.scroll_area label="Tickets" data-lantern-list-nav>
+            <.group_band
+              name="In progress"
+              count={2}
+              group="tickets:in_progress"
+              data-lantern-persist="tickets:in_progress"
+            >
+              <:glyph><.status_glyph status={:in_progress} /></:glyph>
+              <:action href="/components/list-row" label="New ticket in In progress">
+                <.icon name="plus" />
+              </:action>
+            </.group_band>
             <.list_row
+              group="tickets:in_progress"
               identifier="#241"
               title="Visible progress ring"
               parent="Dense primitives"
@@ -2981,6 +3111,7 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:trailing>Sep 3</:trailing>
             </.list_row>
             <.list_row
+              group="tickets:in_progress"
               identifier="#238"
               title="Inspector rail"
               href="/components/inspector"
@@ -2990,11 +3121,43 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:meta><.badge size="sm">docs</.badge></:meta>
               <:trailing>Sep 1</:trailing>
             </.list_row>
+            <.group_band
+              name="Done"
+              count={1}
+              group="tickets:done"
+              data-lantern-persist="tickets:done"
+            >
+              <:glyph><.status_glyph status={:done} /></:glyph>
+            </.group_band>
+            <.list_row
+              group="tickets:done"
+              identifier="#199"
+              title="Closed ring"
+              href="/components/progress-meter"
+              data-lantern-list-item
+            >
+              <:leading><.status_glyph status={:done} /></:leading>
+              <:trailing>Aug 28</:trailing>
+            </.list_row>
           </.scroll_area>
           '''}
         >
-          <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav class="docs-scroll-demo">
+          <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav>
+            <GroupBand.group_band
+              name="In progress"
+              count={2}
+              group="tickets:in_progress"
+              data-lantern-persist="tickets:in_progress"
+            >
+              <:glyph>
+                <StateGlyph.status_glyph status={:in_progress} />
+              </:glyph>
+              <:action href="/components/list-row" label="New ticket in In progress">
+                <Icon.icon name="plus" />
+              </:action>
+            </GroupBand.group_band>
             <ListRow.list_row
+              group="tickets:in_progress"
               identifier="#241"
               title="Visible progress ring"
               parent="Dense primitives"
@@ -3012,6 +3175,7 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:trailing>Sep 3</:trailing>
             </ListRow.list_row>
             <ListRow.list_row
+              group="tickets:in_progress"
               identifier="#238"
               title="Inspector rail"
               href="/components/inspector"
@@ -3025,6 +3189,28 @@ defmodule LanternDemoWeb.ComponentsLive do
               </:meta>
               <:trailing>Sep 1</:trailing>
             </ListRow.list_row>
+            <GroupBand.group_band
+              name="Done"
+              count={1}
+              group="tickets:done"
+              data-lantern-persist="tickets:done"
+            >
+              <:glyph>
+                <StateGlyph.status_glyph status={:done} />
+              </:glyph>
+            </GroupBand.group_band>
+            <ListRow.list_row
+              group="tickets:done"
+              identifier="#199"
+              title="Closed ring"
+              href="/components/progress-meter"
+              data-lantern-list-item
+            >
+              <:leading>
+                <StateGlyph.status_glyph status={:done} />
+              </:leading>
+              <:trailing>Aug 28</:trailing>
+            </ListRow.list_row>
           </ScrollArea.scroll_area>
         </.demo_section>
       </article>
@@ -3033,7 +3219,9 @@ defmodule LanternDemoWeb.ComponentsLive do
         <h1>Group band</h1>
         <p>
           Tinted full-width group header: chevron, glyph, name, count, and a trailing
-          action. Collapsed bands point the chevron right.
+          action. Pass <code>group</code> (and no navigate/patch/href) to make the
+          name row a client-side collapse control; matching <code>list_row</code>
+          <code>group</code> values hide. See the list-row grouped list.
         </p>
         <.demo_section
           title="Expanded and collapsed"
@@ -3070,8 +3258,9 @@ defmodule LanternDemoWeb.ComponentsLive do
         <h1>Inspector</h1>
         <p>
           Sticky right-rail: <code>inspector</code> wraps
-          <code>inspector_section</code> headings and <code>property_row</code>
-          label/value rows. The value may be text or any inline control.
+          <code>inspector_section</code> headings and a
+          <code>description_list</code> with <code>layout="dense"</code>.
+          Values may be text or any inline control.
         </p>
         <.demo_section
           title="Properties rail"
@@ -3079,84 +3268,28 @@ defmodule LanternDemoWeb.ComponentsLive do
           code={~S'''
           <.inspector aria-label="Ticket">
             <.inspector_section title="Properties">
-              <.property_row label="Repo">enventory_new</.property_row>
-              <.property_row label="Status">in_progress</.property_row>
-              <.property_row label="Tags">
-                <.badge size="sm">ui</.badge>
-              </.property_row>
+              <.description_list layout="dense">
+                <:item label="Repo">enventory_new</:item>
+                <:item label="Status">in_progress</:item>
+                <:item label="Tags">
+                  <.badge size="sm">ui</.badge>
+                </:item>
+              </.description_list>
             </.inspector_section>
           </.inspector>
           '''}
         >
           <Inspector.inspector aria-label="Ticket">
             <Inspector.inspector_section title="Properties">
-              <Inspector.property_row label="Repo">enventory_new</Inspector.property_row>
-              <Inspector.property_row label="Status">in_progress</Inspector.property_row>
-              <Inspector.property_row label="Tags">
-                <Badge.badge size="sm">ui</Badge.badge>
-              </Inspector.property_row>
+              <DescriptionList.description_list layout="dense">
+                <:item label="Repo">enventory_new</:item>
+                <:item label="Status">in_progress</:item>
+                <:item label="Tags">
+                  <Badge.badge size="sm">ui</Badge.badge>
+                </:item>
+              </DescriptionList.description_list>
             </Inspector.inspector_section>
           </Inspector.inspector>
-        </.demo_section>
-      </article>
-
-      <article :if={@current == "icon-button"} class="docs-body">
-        <h1>Icon button</h1>
-        <p>
-          Icon-only button with a required accessible label, a tooltip, and an
-          optional keyboard hint.
-        </p>
-        <.demo_section
-          title="Variants and kbd hints"
-          description="ghost (default), outline, and primary. kbd shows in the tooltip after the label."
-          code={~S'''
-          <.icon_button label="Filter" kbd="F">
-            <.icon name="funnel" />
-          </.icon_button>
-          <.icon_button label="Display" kbd="D" variant="outline">
-            <.icon name="adjustments-horizontal" />
-          </.icon_button>
-          <.icon_button label="Promote to ticket" kbd="P" variant="primary">
-            <.icon name="arrow-up-tray" />
-          </.icon_button>
-          '''}
-        >
-          <div class="docs-row">
-            <IconButton.icon_button label="Filter" kbd="F">
-              <Icon.icon name="funnel" />
-            </IconButton.icon_button>
-            <IconButton.icon_button label="Display" kbd="D" variant="outline">
-              <Icon.icon name="adjustments-horizontal" />
-            </IconButton.icon_button>
-            <IconButton.icon_button label="Promote to ticket" kbd="P" variant="primary">
-              <Icon.icon name="arrow-up-tray" />
-            </IconButton.icon_button>
-          </div>
-        </.demo_section>
-      </article>
-
-      <article :if={@current == "segmented"} class="docs-body">
-        <h1>Segmented</h1>
-        <p>
-          Compact All · Active · Backlog control. Not tabs — there is no panel.
-          Arrow keys move and activate the next segment.
-        </p>
-        <.demo_section
-          title="View scope"
-          description="phx-click segments stay on this page; the active value is highlighted."
-          code={~S'''
-          <.segmented id="scope" value={@scope} label="View">
-            <:segment value="all" phx-click="set_dense_scope">All</:segment>
-            <:segment value="active" phx-click="set_dense_scope">Active</:segment>
-            <:segment value="backlog" phx-click="set_dense_scope">Backlog</:segment>
-          </.segmented>
-          '''}
-        >
-          <Segmented.segmented id="dense-scope" value={@dense_scope} label="View">
-            <:segment value="all" phx-click="set_dense_scope">All</:segment>
-            <:segment value="active" phx-click="set_dense_scope">Active</:segment>
-            <:segment value="backlog" phx-click="set_dense_scope">Backlog</:segment>
-          </Segmented.segmented>
         </.demo_section>
       </article>
 
@@ -3206,30 +3339,6 @@ defmodule LanternDemoWeb.ComponentsLive do
         </.demo_section>
       </article>
 
-      <article :if={@current == "progress-ring"} class="docs-body">
-        <h1>Progress ring</h1>
-        <p>
-          SVG completion ring with a visible muted track and a thicker progress
-          stroke. <code>completed</code>/<code>scope</code> is the flicker-shaped
-          alias of <code>value</code>/<code>max</code>.
-        </p>
-        <.demo_section
-          title="Value and alias"
-          description="7/19 stays readable because the track uses --lantern-border-strong."
-          code={~S'''
-          <.progress_ring value={7} max={19} label="Completion">7 / 19</.progress_ring>
-          <.progress_ring completed={7} scope={19} size="sm" label="Progress" />
-          '''}
-        >
-          <div class="docs-row">
-            <ProgressRing.progress_ring value={7} max={19} label="Completion">
-              7 / 19
-            </ProgressRing.progress_ring>
-            <ProgressRing.progress_ring completed={7} scope={19} size="sm" label="Progress" />
-          </div>
-        </.demo_section>
-      </article>
-
       <article :if={@current == "side-panel"} class="docs-body">
         <h1>Side panel</h1>
         <p>
@@ -3253,7 +3362,9 @@ defmodule LanternDemoWeb.ComponentsLive do
           <.side_panel id="tickets-panel" open={@panel_open} aria-label="Project panel">
             <.inspector aria-label="Ticket">
               <.inspector_section title="Properties">
-                <.property_row label="Status">in_progress</.property_row>
+                <.description_list layout="dense">
+                  <:item label="Status">in_progress</:item>
+                </.description_list>
               </.inspector_section>
             </.inspector>
           </.side_panel>
@@ -3272,7 +3383,9 @@ defmodule LanternDemoWeb.ComponentsLive do
           <SidePanel.side_panel id="tickets-panel" open={@panel_open} aria-label="Project panel">
             <Inspector.inspector aria-label="Ticket">
               <Inspector.inspector_section title="Properties">
-                <Inspector.property_row label="Status">in_progress</Inspector.property_row>
+                <DescriptionList.description_list layout="dense">
+                  <:item label="Status">in_progress</:item>
+                </DescriptionList.description_list>
               </Inspector.inspector_section>
             </Inspector.inspector>
           </SidePanel.side_panel>

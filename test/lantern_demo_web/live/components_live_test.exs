@@ -64,7 +64,8 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        "<h1>Progress and meter</h1>",
        ~s(role="progressbar"),
        ~s(role="meter"),
-       ~s(data-state="indeterminate")
+       ~s(data-state="indeterminate"),
+       "7 / 19"
      ]},
     {"scroll-area",
      [
@@ -79,19 +80,20 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        "<h1>List row</h1>",
        ~s(data-lantern-list-nav),
        ~s(data-lantern-list-item),
+       ~s(data-lantern-persist="tickets:in_progress"),
+       ~s(data-lantern-collapse="tickets:in_progress"),
        "#241",
        "Visible progress ring"
      ]},
     {"group-band", ["<h1>Group band</h1>", "lui-group-band", "In progress", "Done"]},
     {"inspector",
      ["<h1>Inspector</h1>", ~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
-    {"icon-button", ["<h1>Icon button</h1>", ~s(aria-label="Filter"), ~s(aria-label="Display")]},
-    {"segmented",
+    {"description-list",
      [
-       "<h1>Segmented</h1>",
-       ~s(id="dense-scope"),
-       ~s(role="radiogroup"),
-       ~s(phx-hook="LanternSegmented")
+       "<h1>Description list</h1>",
+       "Dense (inspector rail)",
+       "lui-inspector-list",
+       "enventory_new"
      ]},
     {"state-glyph",
      [
@@ -101,13 +103,6 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        ~s(data-kind="run"),
        ~s(data-kind="sync"),
        ~s(data-kind="source")
-     ]},
-    {"progress-ring",
-     [
-       "<h1>Progress ring</h1>",
-       ~s(role="progressbar"),
-       ~s(aria-label="Completion"),
-       "7 / 19"
      ]},
     {"side-panel",
      [
@@ -150,11 +145,26 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert html =~ ~s(href="/components/list-row")
     assert html =~ ~s(href="/components/group-band")
     assert html =~ ~s(href="/components/inspector")
-    assert html =~ ~s(href="/components/icon-button")
-    assert html =~ ~s(href="/components/segmented")
+    assert html =~ ~s(href="/components/description-list")
     assert html =~ ~s(href="/components/state-glyph")
-    assert html =~ ~s(href="/components/progress-ring")
     assert html =~ ~s(href="/components/side-panel")
+    refute html =~ ~s(href="/components/icon-button")
+    refute html =~ ~s(href="/components/segmented")
+    refute html =~ ~s(href="/components/progress-ring")
+  end
+
+  test "0.8.2 consolidated attrs are documented on existing pages" do
+    button = build_conn() |> get("/components/button") |> html_response(200)
+    assert button =~ "Icon buttons with label + kbd"
+    assert button =~ ~s(aria-label="Filter")
+    assert button =~ ~s(aria-label="Display")
+    assert button =~ ~s(aria-label="Promote to ticket")
+
+    tabs = build_conn() |> get("/components/tabs") |> html_response(200)
+    assert tabs =~ "Standalone pill control"
+    assert tabs =~ ~s(id="dense-scope")
+    assert tabs =~ ~s(role="radiogroup")
+    assert tabs =~ ~s(phx-hook="LanternTabs")
   end
 
   test "chat kit controls change the transcript and busy state" do
