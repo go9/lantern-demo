@@ -1,4 +1,4 @@
-project = "lantern-ui"
+project = "lantern-demo"
 
 [app]
 name = "lantern-demo"
