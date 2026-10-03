@@ -395,7 +395,7 @@ defmodule LanternDemoWeb.BlocksLive do
     </.app_shell>
     <style>
       .blocks-reviewbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
-        gap: 0.75rem; margin: 0 -1.5rem; padding: 0.5rem 1.5rem;
+        gap: 0.75rem; margin: 0 -1.5rem 1.25rem; padding: 0.5rem 1.5rem;
         background: var(--lantern-surface); border-bottom: 1px solid var(--lantern-border); }
       .blocks-reviewbar-back { font-size: 0.82rem; font-weight: 600; text-decoration: none;
         color: var(--lantern-fg-muted); }
@@ -475,20 +475,23 @@ defmodule LanternDemoWeb.BlocksLive do
                 rows={@list_rows}
                 meta={@list_meta}
                 path="/blocks/list"
-                title="Tickets"
                 fill
                 views={["list"]}
                 show_checkboxes={false}
                 search_field={:title}
                 data-lantern-list-nav
               >
+                <:tab label="All" count={24} />
+                <:tab label="In progress" count={9} filters={[%{field: "status", value: "in_progress"}]} />
+                <:tab label="To do" count={11} filters={[%{field: "status", value: "todo"}]} />
+                <:tab label="Done" count={4} filters={[%{field: "status", value: "done"}]} />
                 <:filter
                   field={:status}
                   label="Status"
                   options={[
-                    {"In progress (1)", "in_progress"},
-                    {"To do (1)", "todo"},
-                    {"Done (1)", "done"}
+                    {"In progress (9)", "in_progress"},
+                    {"To do (11)", "todo"},
+                    {"Done (4)", "done"}
                   ]}
                   prompt="All statuses"
                 />

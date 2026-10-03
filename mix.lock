@@ -14,7 +14,7 @@
   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
   "lantern": {:git, "https://github.com/go9/lantern.git", "9e05dec6ad7cb9ee0a6a7efe8e51b1ea1f633ec0", []},
   "lantern_s3": {:git, "https://github.com/go9/lantern-s3.git", "d9590c44683434017a68c92a8eff75d72add3da7", []},
-  "lantern_ui": {:git, "https://github.com/go9/lantern-ui.git", "54d5a3095378a08be1068f4a18b2db3aa3d3f14d", [ref: "54d5a3095378a08be1068f4a18b2db3aa3d3f14d"]},
+  "lantern_ui": {:git, "https://github.com/go9/lantern-ui.git", "3e934683cc15e82e7f411625bd998a3df02d3d00", [ref: "3e934683cc15e82e7f411625bd998a3df02d3d00"]},
   "lazy_html": {:hex, :lazy_html, "0.1.13", "860ea816f5bc7936d1ab5ccebc388f9d1031ba9c35ed81a4db9a1c3a50737704", [:make, :mix], [{:cc_precompiler, "~> 0.1", [hex: :cc_precompiler, repo: "hexpm", optional: false]}, {:elixir_make, "~> 0.9", [hex: :elixir_make, repo: "hexpm", optional: false]}, {:fine, "~> 0.1.0", [hex: :fine, repo: "hexpm", optional: false]}], "hexpm", "9a8405d6785fe6f8423b86e0ec5f21806ef79941fe853eac3d14fbbb173c34e9"},
   "livecode": {:git, "https://github.com/go9/livecode.git", "860ec50ad992eb8650a7676944d3e339d2ed387d", []},
   "mime": {:hex, :mime, "2.0.7", "b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128", [:mix], [], "hexpm", "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd"},

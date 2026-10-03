@@ -16,7 +16,12 @@ defmodule LanternDemoWeb.BlocksLiveTest do
        "#241",
        "Visible progress ring",
        "All statuses",
-       "data-part=\"search\""
+       "data-part=\"search\"",
+       "All",
+       "In progress",
+       "To do",
+       "Done",
+       "New ticket"
      ]},
     {"detail",
      [
