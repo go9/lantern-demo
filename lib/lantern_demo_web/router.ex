@@ -19,6 +19,8 @@ defmodule LanternDemoWeb.Router do
     live("/", DemoLive, :index)
     live("/storage", S3DemoLive, :index)
     live("/livecode", LiveCodeDemoLive, :index)
+    live("/whats-new", WhatsNewLive)
+    live("/blocks/:name", BlocksLive)
     live("/components", ComponentsLive, :index)
     live("/preview/app-shell", AppShellPreviewLive)
     live("/components/data-table", DataTableDemo)

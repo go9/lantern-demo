@@ -86,7 +86,32 @@ defmodule LanternDemoWeb.DocsShell do
 
   def component_groups, do: @component_groups
 
-  @labels Map.new([{"db", "DB viewer"} | Enum.flat_map(@component_groups, fn {_g, i} -> i end)])
+  @labels Map.new(
+            [
+              {"db", "DB viewer"},
+              {"whats-new", "What's new"},
+              {"blocks-app-shell", "App shell block"},
+              {"blocks-dashboard", "Dashboard block"},
+              {"blocks-list", "List block"},
+              {"blocks-detail", "Detail block"},
+              {"blocks-settings", "Settings block"},
+              {"blocks-form", "Form block"},
+              {"blocks-login", "Login block"},
+              {"blocks-destructive", "Destructive block"}
+              | Enum.flat_map(@component_groups, fn {_g, i} -> i end)
+            ]
+          )
+
+  @blocks [
+    {"app-shell", "App shell"},
+    {"dashboard", "Dashboard"},
+    {"list", "List"},
+    {"detail", "Detail + inspector"},
+    {"settings", "Settings"},
+    {"form", "Form"},
+    {"login", "Login"},
+    {"destructive", "Destructive flow"}
+  ]
 
   attr(:current, :string, required: true)
   attr(:theme, :string, default: "system")
@@ -98,6 +123,7 @@ defmodule LanternDemoWeb.DocsShell do
     assigns =
       assigns
       |> assign(:groups, @component_groups)
+      |> assign(:blocks, @blocks)
       |> assign(:label, Map.get(@labels, assigns.current, "Lantern"))
 
     ~H"""
@@ -111,7 +137,7 @@ defmodule LanternDemoWeb.DocsShell do
       </:brand>
       <:header>
         <Breadcrumb.breadcrumb aria_label="Location">
-          <:item>{if @current == "db", do: "Tools", else: "Components"}</:item>
+          <:item>{section_for(@current)}</:item>
           <:item current>{@label}</:item>
         </Breadcrumb.breadcrumb>
       </:header>
@@ -141,6 +167,18 @@ defmodule LanternDemoWeb.DocsShell do
           <Layout.nav_item label="DB viewer" icon="circle-stack" navigate="/" active={@current == "db"} />
           <Layout.nav_item label="S3 viewer" icon="cloud" navigate="/storage" active={@current == "s3"} />
           <Layout.nav_item label="LiveCode" icon="pencil-square" navigate="/livecode" active={@current == "livecode"} />
+        </Layout.nav_group>
+        <Layout.nav_group label="Review">
+          <Layout.nav_item label="What's new" icon="sparkles" navigate="/whats-new" active={@current == "whats-new"} />
+        </Layout.nav_group>
+        <Layout.nav_group label="Blocks">
+          <Layout.nav_item
+            :for={{slug, label} <- @blocks}
+            label={label}
+            icon="view-columns"
+            navigate={"/blocks/#{slug}"}
+            active={@current == "blocks-#{slug}"}
+          />
         </Layout.nav_group>
         <Layout.nav_group :for={{group, items} <- @groups} label={group}>
           <Layout.nav_item
@@ -226,4 +264,11 @@ defmodule LanternDemoWeb.DocsShell do
   }
 
   defp icon_for(_group, slug), do: Map.get(@icons, slug, "squares-2x2")
+
+  defp section_for("db"), do: "Tools"
+  defp section_for("s3"), do: "Tools"
+  defp section_for("livecode"), do: "Tools"
+  defp section_for("whats-new"), do: "Review"
+  defp section_for("blocks-" <> _), do: "Blocks"
+  defp section_for(_), do: "Components"
 end

@@ -432,6 +432,7 @@ defmodule LanternDemoWeb.ComponentsLive do
        chat_demo_next_reply: 8,
        dense_scope: "all",
        panel_open: true,
+       controlled_status: "active",
        range_form:
          Phoenix.Component.to_form(%{"from" => "2026-08-01", "to" => "2026-08-07"}, as: :range)
      )}
@@ -463,6 +464,16 @@ defmodule LanternDemoWeb.ComponentsLive do
   def handle_event("demo_toast", %{"kind" => kind}, socket) do
     {:noreply,
      LanternUI.send_toast(socket, kind, "This is a #{kind} toast", title: String.capitalize(kind))}
+  end
+
+  # Server-driven select: the Zag machine reports picks here, and the server
+  # value below is truth — patches flow back into the machine.
+  def handle_event("controlled_status_changed", %{"value" => values}, socket) do
+    {:noreply, assign(socket, :controlled_status, List.first(List.wrap(values)))}
+  end
+
+  def handle_event("set_controlled_status", %{"value" => value}, socket) do
+    {:noreply, assign(socket, :controlled_status, value)}
   end
 
   def handle_event("demo_toast_burst", _params, socket) do
@@ -2360,6 +2371,73 @@ defmodule LanternDemoWeb.ComponentsLive do
             options={["a"]}
             errors={["can't be blank"]}
           />
+        </.demo_section>
+        <.demo_section
+          title="Client mode (default)"
+          description="Zag owns the value from data-default-value; picks sync the hidden input and fire input/change, so an existing phx-change keeps working with no server round trip."
+          code={~S'''
+          <.select
+            id="sel-client"
+            name="channel"
+            label="Client mode"
+            value="shopify"
+            options={[{"eBay", "ebay"}, {"Shopify", "shopify"}, {"Direct", "direct"}]}
+          />
+          '''}
+        >
+          <Select.select
+            id="sel-client"
+            name="channel"
+            label="Client mode"
+            value="shopify"
+            options={[{"eBay", "ebay"}, {"Shopify", "shopify"}, {"Direct", "direct"}]}
+          />
+        </.demo_section>
+        <.demo_section
+          title="Server-driven (controlled)"
+          description="controlled makes the server value truth: client picks flow out through on_change, and server patches flow back into the machine. Pick in the listbox, or drive it from the server buttons."
+          code={~S'''
+          <.select
+            id="sel-controlled"
+            name="status"
+            label="Controlled"
+            controlled
+            on_change="controlled_status_changed"
+            value={@controlled_status}
+            options={[{"Active", "active"}, {"Archived", "archived"}]}
+          />
+          '''}
+        >
+          <Select.select
+            id="sel-controlled"
+            name="status"
+            label="Controlled"
+            controlled
+            on_change="controlled_status_changed"
+            value={@controlled_status}
+            options={[{"Active", "active"}, {"Archived", "archived"}]}
+          />
+          <p class="docs-confirm-status" role="status">
+            Server value: <code>{@controlled_status}</code>
+          </p>
+          <div class="docs-row">
+            <Button.button
+              size="sm"
+              variant={if @controlled_status == "active", do: "solid", else: "outline"}
+              phx-click="set_controlled_status"
+              phx-value-value="active"
+            >
+              Set active (server)
+            </Button.button>
+            <Button.button
+              size="sm"
+              variant={if @controlled_status == "archived", do: "solid", else: "outline"}
+              phx-click="set_controlled_status"
+              phx-value-value="archived"
+            >
+              Set archived (server)
+            </Button.button>
+          </div>
         </.demo_section>
       </article>
 
