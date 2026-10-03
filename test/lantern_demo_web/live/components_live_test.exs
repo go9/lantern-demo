@@ -124,6 +124,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
 
       assert html =~ ~s(data-part="theme-toggle")
       assert html =~ ~s(data-part="density-toggle")
+      assert html =~ ~s(data-part="preset-toggle")
       assert html =~ "API reference"
     end
   end
@@ -205,6 +206,99 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   end
 
   # The palette filters nothing itself, so these handlers ARE the search.
+  test "toast deck shows burst, actions, flash, placement, and re-render check" do
+    html = build_conn() |> get("/components/toast") |> html_response(200)
+
+    for fragment <- [
+          "Burst of 6",
+          "With Undo action",
+          "Sticky",
+          "put_flash info",
+          "put_flash error",
+          "Toast then re-render",
+          "set_toast_placement",
+          "top-left",
+          "bottom-center",
+          "collapsed deck"
+        ] do
+      assert html =~ fragment, "missing #{inspect(fragment)} on toast page"
+    end
+  end
+
+  test "toast deck events fire without errors" do
+    {:ok, socket} = mount_components()
+
+    for {event, params} <- [
+          {"demo_toast", %{"kind" => "info"}},
+          {"demo_toast_burst", %{}},
+          {"demo_toast_action", %{}},
+          {"demo_toast_undo", %{}},
+          {"demo_toast_sticky", %{}},
+          {"demo_toast_patch", %{}},
+          {"set_toast_placement", %{"placement" => "bottom-center"}}
+        ] do
+      assert {:noreply, _} =
+               LanternDemoWeb.ComponentsLive.handle_event(event, params, socket)
+    end
+
+    {:noreply, placed} =
+      LanternDemoWeb.ComponentsLive.handle_event(
+        "set_toast_placement",
+        %{"placement" => "bottom-center"},
+        socket
+      )
+
+    assert placed.assigns.toast_placement == "bottom-center"
+  end
+
+  test "put_flash buttons bridge into the toast deck" do
+    {:ok, view, _html} = live(build_conn(), "/components/toast")
+
+    html = view |> element(~s(button[phx-click="demo_toast_flash"])) |> render_click()
+    assert html =~ "Flash message via put_flash"
+
+    html = view |> element(~s(button[phx-click="demo_toast_flash_error"])) |> render_click()
+    assert html =~ "Something went wrong (put_flash)"
+  end
+
+  test "select page shows client and server-driven modes" do
+    html = build_conn() |> get("/components/select") |> html_response(200)
+
+    for fragment <- [
+          "Client mode (default)",
+          "Server-driven (controlled)",
+          "sel-controlled",
+          "controlled_status_changed",
+          "Set active (server)",
+          "Server value:"
+        ] do
+      assert html =~ fragment, "missing #{inspect(fragment)} on select page"
+    end
+  end
+
+  test "controlled select takes client picks and server drives" do
+    {:ok, socket} = mount_components()
+    assert socket.assigns.controlled_status == "active"
+
+    {:noreply, picked} =
+      LanternDemoWeb.ComponentsLive.handle_event(
+        "controlled_status_changed",
+        %{"id" => "sel-controlled", "value" => ["archived"]},
+        socket
+      )
+
+    assert picked.assigns.controlled_status == "archived"
+
+    {:noreply, driven} =
+      LanternDemoWeb.ComponentsLive.handle_event(
+        "set_controlled_status",
+        %{"value" => "active"},
+        socket
+      )
+
+    assert driven.assigns.controlled_status == "active"
+  end
+
   test "command palette search filters and groups the demo command list" do
     {:ok, socket} = mount_components()
 
