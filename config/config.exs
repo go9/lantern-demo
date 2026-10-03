@@ -9,6 +9,9 @@ config :lantern_demo, LanternDemoWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   secret_key_base: String.duplicate("lantern_demo_secret", 4),
   live_view: [signing_salt: "lantern_demo_salt"],
+  # Review showcase is shared over bb connect (remote host) — the LiveView
+  # socket must accept the tunneled origin. Branch-only; never merge to main.
+  check_origin: false,
   render_errors: [formats: [html: LanternDemoWeb.ErrorHTML], layout: false]
 
 config :phoenix, :json_library, Jason
