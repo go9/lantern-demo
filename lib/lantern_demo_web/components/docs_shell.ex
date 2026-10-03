@@ -22,7 +22,6 @@ defmodule LanternDemoWeb.DocsShell do
     {"Dense app",
      [
        {"list-row", "List row"},
-       {"group-band", "Group band"},
        {"inspector", "Inspector"},
        {"state-glyph", "State glyph"},
        {"side-panel", "Side panel"}
@@ -167,7 +166,6 @@ defmodule LanternDemoWeb.DocsShell do
   @icons %{
     "app-shell" => "view-columns",
     "list-row" => "bars-3",
-    "group-band" => "folder",
     "inspector" => "information-circle",
     "state-glyph" => "check-circle",
     "side-panel" => "window",
