@@ -26,7 +26,6 @@ defmodule LanternDemoWeb.ComponentsLive do
   alias LanternUI.Components.Dropdown
   alias LanternUI.Components.EmptyState
   alias LanternUI.Components.Form
-  alias LanternUI.Components.GroupBand
   alias LanternUI.Components.Icon
   alias LanternUI.Components.Inspector
   alias LanternUI.Components.Layout
@@ -233,7 +232,6 @@ defmodule LanternDemoWeb.ComponentsLive do
     "bar-chart" => [{Charts, :bar_chart}],
     "sparkline" => [{Charts, :sparkline}],
     "list-row" => [{ListRow, :list_row}],
-    "group-band" => [{GroupBand, :group_band}],
     "inspector" => [
       {Inspector, :inspector},
       {Inspector, :inspector_section}
@@ -3071,31 +3069,25 @@ defmodule LanternDemoWeb.ComponentsLive do
         <h1>List row</h1>
         <p>
           Dense issue/inbox row: leading glyph, muted mono id, truncating title,
-          meta, trailing. Pair with <code>group_band</code> using matching
-          <code>group</code> keys so a band click collapses its rows. Put
-          <code>data-lantern-persist</code> on each band (same key as
-          <code>group</code>) so the collapsed set survives patches. Put
-          <code>data-lantern-list-nav</code> on the list and
+          meta, trailing. Lists stay flat — one scroll area, one
+          <code>status_glyph</code> column per row, rows ordered by status then
+          recency. Whatever a group header would have said (status name, count)
+          lives on each row or in the filter chips above the list, with counts.
+          Put <code>data-lantern-list-nav</code> on the list and
           <code>data-lantern-list-item</code> on each row for j/k keyboard nav.
         </p>
         <.demo_section
-          title="Grouped list"
-          description="Click a band to collapse its rows. Focus the list, then j/k or arrows move the ring. Enter follows the row link."
+          title="Flat list with status"
+          description="Filter chips carry the status names and counts; every row carries its own status glyph. Focus the list, then j/k or arrows move the ring. Enter follows the row link."
           code={~S'''
+          <div class="docs-row">
+            <.badge size="sm">All (3)</.badge>
+            <.badge size="sm">In progress (1)</.badge>
+            <.badge size="sm">To do (1)</.badge>
+            <.badge size="sm">Done (1)</.badge>
+          </div>
           <.scroll_area label="Tickets" data-lantern-list-nav>
-            <.group_band
-              name="In progress"
-              count={2}
-              group="tickets:in_progress"
-              data-lantern-persist="tickets:in_progress"
-            >
-              <:glyph><.status_glyph status={:in_progress} /></:glyph>
-              <:action href="/components/list-row" label="New ticket in In progress">
-                <.icon name="plus" />
-              </:action>
-            </.group_band>
             <.list_row
-              group="tickets:in_progress"
               identifier="#241"
               title="Visible progress ring"
               parent="Dense primitives"
@@ -3111,7 +3103,6 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:trailing>Sep 3</:trailing>
             </.list_row>
             <.list_row
-              group="tickets:in_progress"
               identifier="#238"
               title="Inspector rail"
               href="/components/inspector"
@@ -3121,16 +3112,7 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:meta><.badge size="sm">docs</.badge></:meta>
               <:trailing>Sep 1</:trailing>
             </.list_row>
-            <.group_band
-              name="Done"
-              count={1}
-              group="tickets:done"
-              data-lantern-persist="tickets:done"
-            >
-              <:glyph><.status_glyph status={:done} /></:glyph>
-            </.group_band>
             <.list_row
-              group="tickets:done"
               identifier="#199"
               title="Closed ring"
               href="/components/progress-meter"
@@ -3142,22 +3124,14 @@ defmodule LanternDemoWeb.ComponentsLive do
           </.scroll_area>
           '''}
         >
+          <div class="docs-row">
+            <Badge.badge size="sm">All (3)</Badge.badge>
+            <Badge.badge size="sm">In progress (1)</Badge.badge>
+            <Badge.badge size="sm">To do (1)</Badge.badge>
+            <Badge.badge size="sm">Done (1)</Badge.badge>
+          </div>
           <ScrollArea.scroll_area label="Tickets" data-lantern-list-nav>
-            <GroupBand.group_band
-              name="In progress"
-              count={2}
-              group="tickets:in_progress"
-              data-lantern-persist="tickets:in_progress"
-            >
-              <:glyph>
-                <StateGlyph.status_glyph status={:in_progress} />
-              </:glyph>
-              <:action href="/components/list-row" label="New ticket in In progress">
-                <Icon.icon name="plus" />
-              </:action>
-            </GroupBand.group_band>
             <ListRow.list_row
-              group="tickets:in_progress"
               identifier="#241"
               title="Visible progress ring"
               parent="Dense primitives"
@@ -3175,7 +3149,6 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:trailing>Sep 3</:trailing>
             </ListRow.list_row>
             <ListRow.list_row
-              group="tickets:in_progress"
               identifier="#238"
               title="Inspector rail"
               href="/components/inspector"
@@ -3189,18 +3162,7 @@ defmodule LanternDemoWeb.ComponentsLive do
               </:meta>
               <:trailing>Sep 1</:trailing>
             </ListRow.list_row>
-            <GroupBand.group_band
-              name="Done"
-              count={1}
-              group="tickets:done"
-              data-lantern-persist="tickets:done"
-            >
-              <:glyph>
-                <StateGlyph.status_glyph status={:done} />
-              </:glyph>
-            </GroupBand.group_band>
             <ListRow.list_row
-              group="tickets:done"
               identifier="#199"
               title="Closed ring"
               href="/components/progress-meter"
@@ -3212,45 +3174,6 @@ defmodule LanternDemoWeb.ComponentsLive do
               <:trailing>Aug 28</:trailing>
             </ListRow.list_row>
           </ScrollArea.scroll_area>
-        </.demo_section>
-      </article>
-
-      <article :if={@current == "group-band"} class="docs-body">
-        <h1>Group band</h1>
-        <p>
-          Tinted full-width group header: chevron, glyph, name, count, and a trailing
-          action. Pass <code>group</code> (and no navigate/patch/href) to make the
-          name row a client-side collapse control; matching <code>list_row</code>
-          <code>group</code> values hide. See the list-row grouped list.
-        </p>
-        <.demo_section
-          title="Expanded and collapsed"
-          description="The + action files into this group. A collapsed band with patch/navigate uses the name row as the expand control."
-          code={~S'''
-          <.group_band name="In progress" count={12}>
-            <:glyph><.status_glyph status={:in_progress} /></:glyph>
-            <:action href="/components/group-band" label="New ticket in In progress">
-              <.icon name="plus" />
-            </:action>
-          </.group_band>
-          <.group_band name="Done" count={40} collapsed href="/components/group-band">
-            <:glyph><.status_glyph status={:done} /></:glyph>
-          </.group_band>
-          '''}
-        >
-          <GroupBand.group_band name="In progress" count={12}>
-            <:glyph>
-              <StateGlyph.status_glyph status={:in_progress} />
-            </:glyph>
-            <:action href="/components/group-band" label="New ticket in In progress">
-              <Icon.icon name="plus" />
-            </:action>
-          </GroupBand.group_band>
-          <GroupBand.group_band name="Done" count={40} collapsed href="/components/group-band">
-            <:glyph>
-              <StateGlyph.status_glyph status={:done} />
-            </:glyph>
-          </GroupBand.group_band>
         </.demo_section>
       </article>
 

@@ -78,14 +78,16 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     {"list-row",
      [
        "<h1>List row</h1>",
+       "Flat list with status",
        ~s(data-lantern-list-nav),
        ~s(data-lantern-list-item),
-       ~s(data-lantern-persist="tickets:in_progress"),
-       ~s(data-lantern-collapse="tickets:in_progress"),
+       "All (3)",
+       "In progress (1)",
+       "To do (1)",
+       "Done (1)",
        "#241",
        "Visible progress ring"
      ]},
-    {"group-band", ["<h1>Group band</h1>", "lui-group-band", "In progress", "Done"]},
     {"inspector",
      ["<h1>Inspector</h1>", ~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
     {"description-list",
@@ -143,12 +145,12 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert html =~ ~s(href="/components/progress-meter")
     assert html =~ ~s(href="/components/scroll-area")
     assert html =~ ~s(href="/components/list-row")
-    assert html =~ ~s(href="/components/group-band")
     assert html =~ ~s(href="/components/inspector")
     assert html =~ ~s(href="/components/description-list")
     assert html =~ ~s(href="/components/state-glyph")
     assert html =~ ~s(href="/components/side-panel")
     refute html =~ ~s(href="/components/icon-button")
+    refute html =~ ~s(href="/components/group-band")
     refute html =~ ~s(href="/components/segmented")
     refute html =~ ~s(href="/components/progress-ring")
   end
@@ -285,6 +287,11 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     html = build_conn() |> get("/components/not-a-component") |> html_response(200)
 
     assert html =~ "<h1>Button</h1>"
+
+    retired = build_conn() |> get("/components/group-band") |> html_response(200)
+
+    assert retired =~ "<h1>Button</h1>"
+    refute retired =~ "lui-group-band"
   end
 
   test "demo chrome persists the long sidebar position across navigation" do
