@@ -106,8 +106,9 @@ const DemoChrome = {
     }
     if (!this.state) {
       const dark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      this.state = { theme: dark ? "dark" : "light", density: "compact" }
+      this.state = { theme: dark ? "dark" : "light", density: "compact", preset: null }
     }
+    if (!("preset" in this.state)) this.state.preset = null
   },
 
   apply() {
@@ -121,6 +122,30 @@ const DemoChrome = {
     if (t) t.textContent = this.state.theme === "dark" ? "Light" : "Dark"
     const d = this.el.querySelector('[data-part="density-label"]')
     if (d) d.textContent = this.state.density === "compact" ? "Compact" : "Comfortable"
+    const p = this.el.querySelector('[data-part="preset-label"]')
+    if (p) p.textContent = this.state.preset === "shadcn" ? "shadcn" : "Default"
+    this.applyPreset()
+  },
+
+  // Preset flows through <Theme.theme preset=>: the LanternTheme hook reads
+  // data-preset off #lantern-theme and mirrors it onto <html> as
+  // data-lantern-theme. Drive both from here so the switch survives patches
+  // and navigation regardless of hook mount order.
+  applyPreset() {
+    const themeEl = document.getElementById("lantern-theme")
+    if (themeEl) {
+      if (this.state.preset) themeEl.setAttribute("data-preset", this.state.preset)
+      else themeEl.removeAttribute("data-preset")
+    }
+    const html = document.documentElement
+    if (this.state.preset) html.setAttribute("data-lantern-theme", this.state.preset)
+    else html.removeAttribute("data-lantern-theme")
+  },
+
+  setPreset(preset) {
+    this.state.preset = preset === "shadcn" ? "shadcn" : null
+    this.save()
+    this.apply()
   },
 
   save() {
@@ -144,8 +169,12 @@ const DemoChrome = {
         this.state.density = this.state.density === "compact" ? "comfortable" : "compact"
         this.save()
         this.apply()
+      } else if (e.target.closest('[data-part="preset-toggle"]')) {
+        this.setPreset(this.state.preset === "shadcn" ? null : "shadcn")
       }
     })
+    this.onPreset = (e) => this.setPreset(e.detail && e.detail.preset)
+    window.addEventListener("demo:set-preset", this.onPreset)
   },
 
   updated() {
@@ -156,6 +185,7 @@ const DemoChrome = {
 
   destroyed() {
     this.saveSidebarScroll()
+    window.removeEventListener("demo:set-preset", this.onPreset)
     this.sidebarNavEl?.removeEventListener("scroll", this.onSidebarScroll)
   },
 }

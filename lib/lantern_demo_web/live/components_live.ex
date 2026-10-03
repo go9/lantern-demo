@@ -465,6 +465,48 @@ defmodule LanternDemoWeb.ComponentsLive do
      LanternUI.send_toast(socket, kind, "This is a #{kind} toast", title: String.capitalize(kind))}
   end
 
+  def handle_event("demo_toast_burst", _params, socket) do
+    socket =
+      Enum.reduce(~w(info success warning danger info success), socket, fn kind, acc ->
+        LanternUI.send_toast(acc, kind, "Toast #{kind}", title: String.capitalize(kind))
+      end)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("demo_toast_action", _params, socket) do
+    {:noreply,
+     LanternUI.send_toast(socket, :success, "Workspace settings were updated.",
+       title: "Changes saved",
+       action: %{label: "Undo", event: "demo_toast_undo"}
+     )}
+  end
+
+  def handle_event("demo_toast_undo", _params, socket) do
+    {:noreply, LanternUI.send_toast(socket, :info, "Undone.", title: "Reverted")}
+  end
+
+  def handle_event("demo_toast_sticky", _params, socket) do
+    {:noreply, LanternUI.send_toast(socket, :warning, "Stays until dismissed.", duration: 0)}
+  end
+
+  def handle_event("demo_toast_flash", _params, socket) do
+    {:noreply, Phoenix.LiveView.put_flash(socket, :info, "Flash message via put_flash")}
+  end
+
+  def handle_event("demo_toast_flash_error", _params, socket) do
+    {:noreply, Phoenix.LiveView.put_flash(socket, :error, "Something went wrong (put_flash)")}
+  end
+
+  # Regression check: a re-render right after send_toast must not eat the toast.
+  def handle_event("demo_toast_patch", _params, socket) do
+    {:noreply,
+     socket
+     |> LanternUI.send_toast(:info, "I should survive the re-render.", title: "Patch test")
+     |> assign(:toast_placement, socket.assigns.toast_placement)
+     |> assign(:demo_tab, "patch-#{System.unique_integer([:positive])}")}
+  end
+
   def handle_event("search_catalog", %{"query" => query}, socket) do
     {:noreply, assign(socket, :catalog_options, catalog_options(query))}
   end
@@ -2828,7 +2870,7 @@ defmodule LanternDemoWeb.ComponentsLive do
           <.button phx-click="demo_toast" phx-value-kind="danger">Danger</.button>
           '''}
         >
-          <Toast.toast_group id="demo-toasts" placement={@toast_placement} />
+          <Toast.toast_group id="demo-toasts" placement={@toast_placement} flash={@flash} />
           <div class="docs-row">
             <Button.button phx-click="demo_toast" phx-value-kind="info">Info</Button.button>
             <Button.button phx-click="demo_toast" phx-value-kind="success" color="success">
@@ -2840,6 +2882,26 @@ defmodule LanternDemoWeb.ComponentsLive do
             <Button.button phx-click="demo_toast" phx-value-kind="danger" color="danger">
               Danger
             </Button.button>
+          </div>
+        </.demo_section>
+
+        <.demo_section
+          title="Stack, actions, flash"
+          description="Fire several to see the collapsed deck; hover or tab into it to fan out and pause timers."
+          code={~S'''
+          <Toast.toast_group flash={@flash} max={3} />
+
+          LanternUI.send_toast(socket, :success, "Saved", action: %{label: "Undo", event: "undo"})
+          LanternUI.send_toast(socket, :info, "Sticky", duration: 0)
+          '''}
+        >
+          <div class="docs-row">
+            <Button.button phx-click="demo_toast_burst">Burst of 6</Button.button>
+            <Button.button phx-click="demo_toast_action" variant="outline">With Undo action</Button.button>
+            <Button.button phx-click="demo_toast_sticky" variant="outline">Sticky</Button.button>
+            <Button.button phx-click="demo_toast_flash" variant="outline">put_flash info</Button.button>
+            <Button.button phx-click="demo_toast_flash_error" variant="outline">put_flash error</Button.button>
+            <Button.button phx-click="demo_toast_patch" variant="outline">Toast then re-render</Button.button>
           </div>
         </.demo_section>
 

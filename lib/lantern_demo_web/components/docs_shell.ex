@@ -123,6 +123,15 @@ defmodule LanternDemoWeb.DocsShell do
           <Button.button variant="outline" size="sm" type="button" data-part="density-toggle">
             <span data-part="density-label">Compact</span>
           </Button.button>
+          <Button.button
+            variant="outline"
+            size="sm"
+            type="button"
+            data-part="preset-toggle"
+            title="Toggle the shadcn preset (<Theme.theme preset>)"
+          >
+            <span data-part="preset-label">Default</span>
+          </Button.button>
         </div>
         {render_slot(@actions)}
       </:actions>
