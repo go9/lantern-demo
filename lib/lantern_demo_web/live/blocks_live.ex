@@ -336,21 +336,6 @@ defmodule LanternDemoWeb.BlocksLive do
 
   def render(%{block: "app-shell"} = assigns) do
     ~H"""
-    <div id="review-bar" phx-hook="DemoChrome" data-shell="demo-app" class="blocks-reviewbar">
-      <.link navigate="/whats-new" class="blocks-reviewbar-back">← What's new</.link>
-      <span class="blocks-reviewbar-title">App shell block</span>
-      <span class="demo-chrome">
-        <.button variant="outline" size="sm" type="button" data-part="theme-toggle">
-          <span data-part="theme-label">Dark</span>
-        </.button>
-        <.button variant="outline" size="sm" type="button" data-part="density-toggle">
-          <span data-part="density-label">Compact</span>
-        </.button>
-        <.button variant="outline" size="sm" type="button" data-part="preset-toggle">
-          <span data-part="preset-label">Default</span>
-        </.button>
-      </span>
-    </div>
     <.theme />
     <.toast_group id="blocks-toasts" flash={@flash} />
     <.app_shell id="demo-app">
@@ -381,6 +366,21 @@ defmodule LanternDemoWeb.BlocksLive do
       <:sidebar_footer>
         <.nav_link label="Documentation" icon="globe-alt" href="/whats-new" />
       </:sidebar_footer>
+      <div id="review-bar" phx-hook="DemoChrome" data-shell="demo-app" class="blocks-reviewbar">
+        <.link navigate="/whats-new" class="blocks-reviewbar-back">← What's new</.link>
+        <span class="blocks-reviewbar-title">App shell block — the chrome on this page is the recipe</span>
+        <span class="demo-chrome">
+          <.button variant="outline" size="sm" type="button" data-part="theme-toggle">
+            <span data-part="theme-label">Dark</span>
+          </.button>
+          <.button variant="outline" size="sm" type="button" data-part="density-toggle">
+            <span data-part="density-label">Compact</span>
+          </.button>
+          <.button variant="outline" size="sm" type="button" data-part="preset-toggle">
+            <span data-part="preset-label">Default</span>
+          </.button>
+        </span>
+      </div>
       <.page_header title="Tickets" description="Every request, one flat list.">
         <:actions>
           <.button size="sm" variant="solid" navigate="/blocks/form">New ticket</.button>
@@ -394,7 +394,8 @@ defmodule LanternDemoWeb.BlocksLive do
       </.card>
     </.app_shell>
     <style>
-      .blocks-reviewbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem;
+      .blocks-reviewbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+        gap: 0.75rem; margin: 0 -1.5rem; padding: 0.5rem 1.5rem;
         background: var(--lantern-surface); border-bottom: 1px solid var(--lantern-border); }
       .blocks-reviewbar-back { font-size: 0.82rem; font-weight: 600; text-decoration: none;
         color: var(--lantern-fg-muted); }
