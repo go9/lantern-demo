@@ -41,7 +41,7 @@ defmodule LanternDemoWeb.App.Pages.Ticket do
 
   def actions(%{ticket: t} = assigns) do
     [
-      %{kind: :panel_toggle, label: "Toggle panel", open: assigns.panel_open},
+      %{kind: :panel_toggle, label: "Toggle properties panel", event: "toggle_panel", open: assigns.panel_open},
       %{label: "Edit", navigate: "/app/tickets/#{t.id}/edit"},
       %{label: "Delete ticket", event: "delete_ticket", color: "danger"}
     ]
@@ -51,6 +51,10 @@ defmodule LanternDemoWeb.App.Pages.Ticket do
 
   def handle_event("set_panel", %{"open" => open}, socket) do
     {:noreply, Phoenix.Component.assign(socket, panel_open: open == true or open == "true")}
+  end
+
+  def handle_event("toggle_panel", _params, socket) do
+    {:noreply, Phoenix.Component.assign(socket, panel_open: !socket.assigns.panel_open)}
   end
 
   def handle_event("side_panel", _params, socket), do: {:noreply, socket}
