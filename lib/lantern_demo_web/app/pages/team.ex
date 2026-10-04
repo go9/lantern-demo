@@ -8,7 +8,9 @@ defmodule LanternDemoWeb.App.Pages.Team do
 
   def mount_page(socket, _params) do
     Phoenix.Component.assign(socket,
-      invite_open: false
+      invite_open: false,
+      invite_form: %{"name" => "", "email" => "", "role" => "member"},
+      invite_errors: %{}
     )
   end
 
@@ -27,7 +29,9 @@ defmodule LanternDemoWeb.App.Pages.Team do
   def handle_event("open_invite", _params, socket) do
     {:noreply,
      Phoenix.Component.assign(socket,
-       invite_open: true
+       invite_open: true,
+       invite_form: %{"name" => "", "email" => "", "role" => "member"},
+       invite_errors: %{}
      )}
   end
 
@@ -35,37 +39,48 @@ defmodule LanternDemoWeb.App.Pages.Team do
     {:noreply, Phoenix.Component.assign(socket, invite_open: o in [true, "true"])}
   end
 
-  def handle_event("send_invite", %{"name" => name, "email" => email} = f, socket) do
-    name = String.trim(name)
-    email = email |> String.trim() |> String.downcase()
+  def handle_event("invite_change", %{"invite" => f}, socket) do
+    {:noreply,
+     Phoenix.Component.assign(socket,
+       invite_form: f,
+       invite_errors: validate(f, socket.assigns.members)
+     )}
+  end
 
-    cond do
-      name == "" or not Regex.match?(~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/, email) ->
-        {:noreply, error_toast(socket, "Enter a name and a valid email address.")}
+  def handle_event("send_invite", %{"invite" => f}, socket) do
+    case validate(f, socket.assigns.members) do
+      errors when map_size(errors) > 0 ->
+        {:noreply, Phoenix.Component.assign(socket, invite_form: f, invite_errors: errors)}
 
-      true ->
+      _ ->
+        role = if f["role"] in Store.roles(), do: f["role"], else: "member"
+
         case Store.invite_member(socket.assigns.sid, %{
-               name: name,
-               email: email,
-               role: f["role"] || "member"
+               name: String.trim(f["name"]),
+               email: f["email"] |> String.trim() |> String.downcase(),
+               role: role
              }) do
           {:ok, member} ->
             {:noreply,
              socket
              |> Phoenix.Component.assign(invite_open: false)
-             |> Phoenix.LiveView.push_event("acme:reset-form", %{id: "invite-form"})
-             |> LanternDemoWeb.AppLive.toast(
-               :success,
-               "#{member.name} was invited as #{f["role"] || "member"}.",
+             |> LanternDemoWeb.AppLive.toast(:success, "#{member.name} was invited as #{role}.",
                title: "Invite sent"
              )}
 
           {:error, :taken} ->
-            {:noreply, error_toast(socket, "#{email} is already on the team.")}
+            {:noreply,
+             Phoenix.Component.assign(socket,
+               invite_form: f,
+               invite_errors: %{"email" => ["is already on the team"]}
+             )}
 
           {:error, :limit} ->
             {:noreply,
-             error_toast(socket, "This demo workspace has reached its team size limit.")}
+             Phoenix.Component.assign(socket,
+               invite_form: f,
+               invite_errors: %{"email" => ["team size limit reached for this demo"]}
+             )}
         end
     end
   end
@@ -106,8 +121,27 @@ defmodule LanternDemoWeb.App.Pages.Team do
 
   def handle_event(_, _, _), do: :unhandled
 
-  defp error_toast(socket, message) do
-    LanternDemoWeb.AppLive.toast(socket, :error, message, title: "Couldn't send the invite")
+  defp validate(f, members) do
+    name = String.trim(f["name"] || "")
+    email = f["email"] |> to_string() |> String.trim() |> String.downcase()
+
+    %{}
+    |> then(fn e -> if name == "", do: Map.put(e, "name", ["can't be blank"]), else: e end)
+    |> then(fn e ->
+      cond do
+        email == "" ->
+          Map.put(e, "email", ["can't be blank"])
+
+        not Regex.match?(~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/, email) ->
+          Map.put(e, "email", ["must be a valid email"])
+
+        Enum.any?(members, &(&1.email == email)) ->
+          Map.put(e, "email", ["is already on the team"])
+
+        true ->
+          e
+      end
+    end)
   end
 
   def render(assigns) do
@@ -175,19 +209,18 @@ defmodule LanternDemoWeb.App.Pages.Team do
     </.data_table>
 
     <.modal id="invite-dialog" open={@invite_open} on_change="invite_dialog_change" aria_labelledby="invite-title">
-      <%!-- see projects.ex: dialog forms are driven by the AcmeDialogForm hook (native validation, no re-render) --%>
-      <form id="invite-form" phx-hook="AcmeDialogForm" data-enter="send_invite" class="acme-form">
+      <form id="invite-form" phx-change="invite_change" phx-submit="send_invite" class="acme-form">
         <.stack gap="md">
           <div>
             <h2 id="invite-title" class="acme-dialog-title">Invite a teammate</h2>
             <p class="acme-muted">They'll get an email with a link to join Acme.</p>
           </div>
-          <.input id="invite-name" name="name" label="Name" placeholder="Margaret Hamilton" required maxlength="60" />
-          <.input id="invite-email" name="email" type="email" label="Email" placeholder="margaret@acme.test" required />
-          <.select id="invite-role" name="role" label="Role" value="member" options={Helpers.role_options()} />
+          <.input id="invite-name" name="invite[name]" label="Name" placeholder="Margaret Hamilton" value={@invite_form["name"]} errors={Map.get(@invite_errors, "name", [])} />
+          <.input id="invite-email" name="invite[email]" type="email" label="Email" placeholder="margaret@acme.test" value={@invite_form["email"]} errors={Map.get(@invite_errors, "email", [])} />
+          <.select id="invite-role" name="invite[role]" label="Role" value={@invite_form["role"]} options={Helpers.role_options()} />
           <div class="acme-dialog-actions">
             <.button type="button" variant="ghost" phx-click={LanternUI.close_dialog("invite-dialog")}>Cancel</.button>
-            <.button type="button" variant="solid" data-submit="send_invite">Send invite</.button>
+            <.button type="submit" variant="solid">Send invite</.button>
           </div>
         </.stack>
       </form>

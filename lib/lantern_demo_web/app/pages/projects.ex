@@ -17,7 +17,9 @@ defmodule LanternDemoWeb.App.Pages.Projects do
 
     Phoenix.Component.assign(socket,
       projects: projects,
-      new_open: false
+      new_open: false,
+      project_form: %{"name" => "", "summary" => ""},
+      project_errors: %{}
     )
   end
 
@@ -36,7 +38,9 @@ defmodule LanternDemoWeb.App.Pages.Projects do
   def handle_event("open_new_project", _params, socket) do
     {:noreply,
      Phoenix.Component.assign(socket,
-       new_open: true
+       new_open: true,
+       project_form: %{"name" => "", "summary" => ""},
+       project_errors: %{}
      )}
   end
 
@@ -47,29 +51,37 @@ defmodule LanternDemoWeb.App.Pages.Projects do
     {:noreply, Phoenix.Component.assign(socket, new_open: o in [true, "true"])}
   end
 
-  def handle_event("create_project", %{"name" => name} = p, socket) do
-    name = String.trim(name)
+  def handle_event("project_change", %{"project" => p}, socket) do
+    {:noreply,
+     Phoenix.Component.assign(socket,
+       project_form: p,
+       project_errors: validate(p, socket.assigns.projects)
+     )}
+  end
 
-    cond do
-      name == "" ->
-        {:noreply, error_toast(socket, "A project needs a name.")}
+  def handle_event("create_project", %{"project" => p}, socket) do
+    case validate(p, socket.assigns.projects) do
+      errors when map_size(errors) > 0 ->
+        {:noreply, Phoenix.Component.assign(socket, project_form: p, project_errors: errors)}
 
-      Enum.any?(socket.assigns.projects, &(String.downcase(&1.name) == String.downcase(name))) ->
-        {:noreply, error_toast(socket, "A project named “#{name}” already exists.")}
-
-      true ->
+      _ ->
         case Store.create_project(socket.assigns.sid, %{
-               name: name,
+               name: String.trim(p["name"]),
                summary: String.trim(p["summary"] || "")
              }) do
           nil ->
-            {:noreply, error_toast(socket, "This demo workspace has reached its project limit.")}
+            {:noreply,
+             LanternDemoWeb.AppLive.toast(
+               socket,
+               :error,
+               "This demo workspace has reached its project limit.",
+               title: "Couldn't create the project"
+             )}
 
           project ->
             {:noreply,
              socket
              |> mount_page(%{})
-             |> Phoenix.LiveView.push_event("acme:reset-form", %{id: "project-form"})
              |> LanternDemoWeb.AppLive.toast(:success, "“#{project.name}” is ready for tickets.",
                title: "Project created"
              )}
@@ -79,8 +91,22 @@ defmodule LanternDemoWeb.App.Pages.Projects do
 
   def handle_event(_, _, _), do: :unhandled
 
-  defp error_toast(socket, message) do
-    LanternDemoWeb.AppLive.toast(socket, :error, message, title: "Couldn't create the project")
+  defp validate(p, projects) do
+    name = String.trim(p["name"] || "")
+
+    cond do
+      name == "" ->
+        %{"name" => ["can't be blank"]}
+
+      String.length(name) > 40 ->
+        %{"name" => ["is too long (max 40)"]}
+
+      Enum.any?(projects, &(String.downcase(&1.name) == String.downcase(name))) ->
+        %{"name" => ["is already taken"]}
+
+      true ->
+        %{}
+    end
   end
 
   def render(%{view_state: "loading"} = assigns) do
@@ -137,12 +163,7 @@ defmodule LanternDemoWeb.App.Pages.Projects do
     </.data_table>
 
     <.modal id="new-project-dialog" open={@new_open} on_change="project_dialog_change" aria_label="New project">
-      <%!-- lantern-ui notes (see the review report): LiveView form events (phx-change/phx-submit) lock
-          the dialog root and blur the focused field, and the Zag dialog then dismisses itself — as does
-          a server patch of the dialog body followed by a click inside it. So this form is driven by the
-          AcmeDialogForm hook: native validation, then one plain pushEvent. Server-side failures come
-          back as an error toast, never as a re-render of the open dialog. --%>
-      <form id="project-form" phx-hook="AcmeDialogForm" data-enter="create_project" class="acme-form">
+      <form id="project-form" phx-change="project_change" phx-submit="create_project" class="acme-form">
         <.stack gap="md">
           <div>
             <h2 id="new-project-title" class="acme-dialog-title">New project</h2>
@@ -150,22 +171,23 @@ defmodule LanternDemoWeb.App.Pages.Projects do
           </div>
           <.input
             id="project-name"
-            name="name"
+            name="project[name]"
             label="Name"
             placeholder="Mobile app"
-            required
-            maxlength="40"
+            value={@project_form["name"]}
+            errors={Map.get(@project_errors, "name", [])}
           />
           <.textarea
             id="project-summary"
-            name="summary"
+            name="project[summary]"
             label="Summary"
             rows={3}
+            value={@project_form["summary"]}
             placeholder="What is this project for?"
           />
           <div class="acme-dialog-actions">
             <.button type="button" variant="ghost" phx-click={LanternUI.close_dialog("new-project-dialog")}>Cancel</.button>
-            <.button type="button" variant="solid" data-submit="create_project">Create project</.button>
+            <.button type="submit" variant="solid">Create project</.button>
           </div>
         </.stack>
       </form>

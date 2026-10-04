@@ -14,7 +14,9 @@ defmodule LanternDemoWeb.App.Pages.Settings do
 
     Phoenix.Component.assign(socket,
       profile_form: %{"name" => s.name, "email" => s.email, "signature" => s.signature},
-      profile_errors: %{}
+      profile_errors: %{},
+      reset_confirm: "",
+      reset_error: nil
     )
   end
 
@@ -103,15 +105,27 @@ defmodule LanternDemoWeb.App.Pages.Settings do
 
   # ── danger zone ──
 
+  def handle_event("reset_change", %{"reset" => %{"confirm" => c}}, socket) do
+    {:noreply, Phoenix.Component.assign(socket, reset_confirm: c, reset_error: nil)}
+  end
+
+  def handle_event("confirm_reset", %{"reset" => %{"confirm" => c}}, socket) when c != "RESET" do
+    {:noreply,
+     Phoenix.Component.assign(socket, reset_confirm: c, reset_error: "type RESET to confirm")}
+  end
+
   def handle_event("confirm_reset", _params, socket) do
     Store.reset!(socket.assigns.sid)
 
     {:noreply,
      socket
+     |> Phoenix.Component.assign(reset_confirm: "", reset_error: nil)
      |> LanternUI.close_dialog("reset-dialog")
      |> LanternDemoWeb.AppLive.toast(
        :success,
-       "Tickets, projects and the team are back to the seed data.", title: "Workspace reset")
+       "Tickets, projects and the team are back to the seed data.",
+       title: "Workspace reset"
+     )
      |> Phoenix.LiveView.push_patch(to: "/app")}
   end
 
@@ -200,9 +214,19 @@ defmodule LanternDemoWeb.App.Pages.Settings do
       <:title>Reset this workspace?</:title>
       <:description>
         Every ticket, project, comment and team change you made is replaced with the seed data. This can't be undone.
+        <form id="reset-form" phx-change="reset_change" phx-submit="confirm_reset" class="acme-form">
+          <.input
+            id="reset-confirm"
+            name="reset[confirm]"
+            label="Type RESET to confirm"
+            value={@reset_confirm}
+            errors={if @reset_error, do: [@reset_error], else: []}
+            autocomplete="off"
+          />
+        </form>
       </:description>
       <:cancel><.button variant="outline" phx-click={LanternUI.close_dialog("reset-dialog")}>Cancel</.button></:cancel>
-      <:action><.button variant="solid" color="danger" phx-click="confirm_reset">Reset workspace</.button></:action>
+      <:action><.button variant="solid" color="danger" type="submit" form="reset-form">Reset workspace</.button></:action>
     </.alert_dialog>
     """
   end

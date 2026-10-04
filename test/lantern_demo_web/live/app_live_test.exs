@@ -206,16 +206,20 @@ defmodule LanternDemoWeb.AppLiveTest do
       assert html =~ "No tickets here"
     end
 
-    test "creating a project through the dialog" do
+    test "the project dialog is a real form: live + submit validation, then creates" do
       {sid, view, _} = page("/app/projects")
       render_click(view, "open_new_project", %{})
-      render_hook(view, "create_project", %{"name" => "Mobile", "summary" => "iOS"})
+
+      html = render_change(view, "project_change", %{"project" => %{"name" => "", "summary" => ""}})
+      assert html =~ "can&#39;t be blank" or html =~ "can't be blank"
+
+      html = render_submit(view, "create_project", %{"project" => %{"name" => "lantern-ui", "summary" => ""}})
+      assert html =~ "is already taken"
+      assert length(Store.list_projects(sid)) == 3
+
+      render_submit(view, "create_project", %{"project" => %{"name" => "Mobile", "summary" => "iOS"}})
       assert Enum.any?(Store.list_projects(sid), &(&1.name == "Mobile"))
       assert render(view) =~ "Mobile"
-
-      # duplicate names are refused
-      render_hook(view, "create_project", %{"name" => "mobile", "summary" => ""})
-      assert length(Store.list_projects(sid)) == 4
     end
   end
 
@@ -224,13 +228,17 @@ defmodule LanternDemoWeb.AppLiveTest do
       {sid, view, html} = page("/app/team")
       assert html =~ "Barbara Liskov"
 
-      render_hook(view, "send_invite", %{"name" => "Margaret", "email" => "nope", "role" => "member"})
+      inv = fn email -> %{"invite" => %{"name" => "Margaret", "email" => email, "role" => "viewer"}} end
+
+      html = render_submit(view, "send_invite", inv.("nope"))
+      assert html =~ "must be a valid email"
       assert length(Store.list_members(sid)) == 4
 
-      render_hook(view, "send_invite", %{"name" => "Margaret", "email" => "grace@acme.test", "role" => "member"})
+      html = render_submit(view, "send_invite", inv.("grace@acme.test"))
+      assert html =~ "is already on the team"
       assert length(Store.list_members(sid)) == 4
 
-      render_hook(view, "send_invite", %{"name" => "Margaret", "email" => "m@acme.test", "role" => "viewer"})
+      render_submit(view, "send_invite", inv.("m@acme.test"))
       assert Enum.any?(Store.list_members(sid), &(&1.email == "m@acme.test" and &1.role == "viewer"))
 
       render_hook(view, "set_role", %{"id" => "role-2-select", "value" => ["admin"]})
@@ -300,7 +308,11 @@ defmodule LanternDemoWeb.AppLiveTest do
     test "the danger zone resets the workspace" do
       {sid, view, _} = page("/app/settings")
       Store.delete_ticket(sid, 241)
-      render_click(view, "confirm_reset", %{})
+      html = render_submit(view, "confirm_reset", %{"reset" => %{"confirm" => "nope"}})
+      assert html =~ "type RESET to confirm"
+      assert Store.get_ticket(sid, 241) == nil
+
+      render_submit(view, "confirm_reset", %{"reset" => %{"confirm" => "RESET"}})
       assert_patch(view, "/app")
       assert Store.get_ticket(sid, 241)
     end

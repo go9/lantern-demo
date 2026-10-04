@@ -30,7 +30,7 @@ defmodule LanternDemo.MixProject do
       # select (client + controlled modes), stack/1, and test/support/blocks
       # page recipes. Never merge this to main (auto-deploys + Hex pin).
       {:lantern_ui,
-       github: "go9/lantern-ui", ref: "1d5d4e02a950d9631fbfa008c13cf1d369ac113a", override: true},
+       github: "go9/lantern-ui", ref: "94c0191af1e65fdd4a9d5ef8ba567ce039d06b6e", override: true},
       {:lantern_s3, github: "go9/lantern-s3"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
