@@ -232,3 +232,8 @@ dialog.docs-search::backdrop { background: rgb(0 0 0 / .45); }
 .docs-icon-grid .docs-icon-cell:hover { background: var(--lantern-surface-hover); }
 .docs-icon-grid .lui-icon { width: 1.25rem; height: 1.25rem; }
 .docs-icon-grid code { font-size: .68rem; color: var(--lantern-fg-muted); }
+
+/* docs sidebar rhythm: section rows ~34px pitch, sub-items ~28px (shadcn-like) */
+#lantern-demo-shell .lui-nav-sub { margin-bottom: 4px; }
+#lantern-demo-shell .lui-nav-sub-panel .lui-nav-item { padding-top: 5.6px; padding-bottom: 5.6px; }
+#lantern-demo-shell .lui-nav-sub-panel { margin-bottom: 4px; }
