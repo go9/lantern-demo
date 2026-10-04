@@ -32,6 +32,7 @@ defmodule LanternDemoWeb.BlocksLive do
     {:ok,
      socket
      |> assign(:page_title, "Blocks — lantern-ui")
+     |> assign(:labels, @labels)
      |> assign(:block, "dashboard")
      |> assign(:activity_filter, "all")
      |> assign(:panel_open, true)
@@ -415,6 +416,7 @@ defmodule LanternDemoWeb.BlocksLive do
     ~H"""
     <DocsShell.shell current={"blocks/#{@block}"}>
       <.toast_group id="blocks-toasts" flash={@flash} />
+      <h1 :if={@block in ["list", "form"]} class="lui-sr-only">{Map.fetch!(@labels, @block)} block</h1>
       <article :if={@block == "dashboard"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
         <div style="max-width: 1120px; margin: 0 auto;">
