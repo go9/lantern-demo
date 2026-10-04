@@ -290,10 +290,37 @@ const DocsSearch = {
   },
 }
 
+// Forms inside lantern dialogs. LiveView form events (phx-change / phx-submit) lock the
+// dialog root and blur the focused field, and the Zag dialog then dismisses itself, so
+// these forms stay out of LiveView's form handling: a button (or Enter) collects the
+// FormData and pushes one plain event.
+const AcmeDialogForm = {
+  mounted() {
+    this.el.addEventListener("submit", (e) => e.preventDefault())
+    this.handleEvent("acme:reset-form", ({ id }) => id === this.el.id && this.el.reset())
+    this.el.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-submit]")
+      if (btn) this.send(btn.dataset.submit)
+    })
+    this.el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.matches("input") && this.el.dataset.enter) {
+        e.preventDefault()
+        this.send(this.el.dataset.enter)
+      }
+    })
+  },
+  send(event) {
+    // native constraint validation (required / type=email): no server round-trip, so
+    // the dialog body is never re-rendered while it is open
+    if (!this.el.reportValidity()) return
+    this.pushEvent(event, Object.fromEntries(new FormData(this.el)))
+  },
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: { ...LanternUIHooks, LanternGrid, LiveCode, LanternS3Download, TurnstileWidget, DemoTheming, DemoChrome, DocsExample, DocsSearch },
+  hooks: { ...LanternUIHooks, LanternGrid, LiveCode, LanternS3Download, TurnstileWidget, DemoTheming, DemoChrome, DocsExample, DocsSearch, AcmeDialogForm },
   uploaders: { S3 },
   params: { _csrf_token: csrfToken },
 })

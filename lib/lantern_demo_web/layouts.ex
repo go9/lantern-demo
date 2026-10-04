@@ -22,6 +22,7 @@ defmodule LanternDemoWeb.Layouts do
         <link rel="stylesheet" href="/lantern_ui.css" />
         <link rel="stylesheet" href="/lantern_s3.css" />
         <link rel="stylesheet" href="/docs.css" />
+        <link rel="stylesheet" href="/acme.css" />
         <style>
           /* Feed lantern-ui the flicker type system: Space Grotesk brand/headings,
              Inter body, JetBrains Mono for code. */

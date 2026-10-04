@@ -1,0 +1,66 @@
+/* Acme demo app (/app) — layout glue only. Colors, radii, type and spacing all
+   come from lantern's --lantern-* tokens. */
+.acme-muted { color: var(--lantern-fg-muted); font-size: .85em; }
+.acme-block { display: block; }
+.acme-body { margin: 0; font-size: var(--lantern-text); line-height: 1.6; color: var(--lantern-fg); white-space: pre-wrap; }
+.acme-link { color: var(--lantern-fg); font-weight: 600; text-decoration: none; }
+.acme-link:hover { text-decoration: underline; }
+.acme-mono { font-family: var(--lantern-font-mono); font-size: .85em; color: var(--lantern-fg-muted); }
+.acme-narrow { max-width: 44rem; }
+.acme-form { display: contents; }
+.acme-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--lantern-space-md); }
+
+/* app bar */
+.acme-search-btn { min-width: 11rem; justify-content: space-between; gap: .5rem; }
+.acme-kbd { font-family: var(--lantern-font-mono); font-size: .7rem; padding: 0 .35em; border: 1px solid var(--lantern-border);
+  border-radius: 4px; color: var(--lantern-fg-subtle); }
+.acme-bell { position: relative; }
+.acme-bell-dot { position: absolute; top: -5px; right: -5px; min-width: 1rem; height: 1rem; padding: 0 .25rem; border-radius: 999px;
+  background: var(--lantern-danger); color: var(--lantern-danger-fg); font-size: .65rem; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+@media (max-width: 720px) { .acme-search-label, .acme-kbd { display: none; } .acme-search-btn { min-width: 0; } }
+
+/* login */
+.acme-auth { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; background: var(--lantern-surface-sunken); color: var(--lantern-fg); }
+.acme-auth-card { width: min(24rem, 100%); }
+.acme-auth-brand { display: flex; align-items: center; gap: .5rem; }
+.acme-block-btn { width: 100%; justify-content: center; }
+
+/* tickets table */
+.acme-status-cell { display: inline-flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.acme-ticket-title { display: inline-flex; align-items: baseline; gap: .6rem; }
+.acme-rowtitle { font-weight: 550; }
+.acme-skel-list, .acme-skel-row { display: grid; gap: .5rem; }
+.acme-skel-row { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+
+/* ticket detail */
+.acme-detail { display: flex; gap: 1.25rem; align-items: flex-start; }
+.acme-detail-main { flex: 1; min-width: 0; }
+.acme-comment { display: flex; gap: .75rem; align-items: flex-start; }
+.acme-comment-head { display: flex; gap: .5rem; align-items: baseline; font-size: .875rem; margin-bottom: .15rem; }
+@media (max-width: 900px) { .acme-detail { flex-direction: column; } }
+
+/* dashboard + projects */
+.acme-project-line { display: grid; grid-template-columns: auto 1fr; gap: .15rem .75rem; align-items: center; }
+.acme-project-line .acme-muted { grid-column: 2; }
+.acme-project-body { display: flex; align-items: center; gap: 1rem; }
+.acme-project-num { font-size: var(--lantern-text); font-weight: 600; margin-bottom: .25rem; }
+.acme-chips { display: flex; gap: .35rem; flex-wrap: wrap; }
+.acme-chip-count { opacity: .7; font-variant-numeric: tabular-nums; margin-left: .25rem; }
+
+/* team + dialogs */
+.acme-person { display: inline-flex; align-items: center; gap: .65rem; }
+.acme-col-actions { width: 3rem; text-align: right; }
+.acme-dialog-title { margin: 0 0 .15rem; font-size: 1.05rem; font-weight: 650; }
+.acme-dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+
+/* notifications */
+.acme-unread .lui-list-row-name { font-weight: 700; }
+.acme-role-select { max-width: 12rem; }
+
+/* settings */
+.acme-danger { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.acme-danger p { margin: .15rem 0 0; }
+
+@media (max-width: 560px) { .acme-form-grid { grid-template-columns: 1fr; } }
+.acme-dialog-title, .acme-comment p, .acme-comment-head { font-size: var(--lantern-text); }
+.acme-auth, .acme-detail, .acme-narrow { font-size: var(--lantern-text); }

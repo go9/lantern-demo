@@ -1,52 +1,128 @@
 defmodule DemoApp.Store do
   @moduledoc """
-  Seeded in-memory store for the /app demo (Acme). An Agent holding plain
-  maps — everything persists while the server runs, nothing touches Postgres.
-  `reset!/0` reseeds (used by tests and the settings danger zone).
+  Seeded in-memory store for the /app demo (Acme). One Agent holds an
+  independent copy of the workspace per visitor session (`sid`, from the
+  session cookie), so a public demo never lets one visitor's deletes show up
+  for another. Idle sessions are pruned. Nothing touches Postgres.
+  `reset!/1` reseeds one session (the settings danger zone and the tests).
   """
   use Agent
 
   @statuses ~w(todo in_progress done)
   @priorities ~w(low medium high urgent)
+  @roles ~w(admin member viewer)
+  @ttl_ms :timer.hours(2)
+  @max_sessions 400
 
   def start_link(_opts) do
-    Agent.start_link(fn -> seed() end, name: __MODULE__)
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
   end
 
-  def reset! do
-    Agent.update(__MODULE__, fn _ -> seed() end)
+  def statuses, do: @statuses
+  def priorities, do: @priorities
+  def roles, do: @roles
+
+  # State access ---------------------------------------------------------
+
+  defp get(sid, fun) do
+    Agent.get_and_update(__MODULE__, fn sessions ->
+      {state, sessions} = fetch(sessions, sid)
+      {fun.(state), sessions}
+    end)
   end
 
-  # ── tickets ──
-
-  def list_tickets, do: Agent.get(__MODULE__, & &1.tickets)
-
-  def get_ticket(id) when is_integer(id) do
-    Agent.get(__MODULE__, fn s -> Enum.find(s.tickets, &(&1.id == id)) end)
+  defp update(sid, fun) do
+    Agent.get_and_update(__MODULE__, fn sessions ->
+      {state, sessions} = fetch(sessions, sid)
+      {reply, new_state} = fun.(state)
+      {reply, put_in(sessions[sid], %{state: new_state, ts: now()})}
+    end)
   end
 
-  def get_ticket(id) when is_binary(id) do
-    case Integer.parse(id) do
-      {n, _} -> get_ticket(n)
-      :error -> nil
+  defp fetch(sessions, sid) do
+    sessions = prune(sessions)
+
+    case sessions do
+      %{^sid => %{state: state}} ->
+        {state, put_in(sessions[sid].ts, now())}
+
+      _ ->
+        state = seed()
+        {state, Map.put(sessions, sid, %{state: state, ts: now()})}
     end
   end
 
-  def counts do
-    tickets = list_tickets()
+  defp prune(sessions) do
+    cutoff = now() - @ttl_ms
+    sessions = sessions |> Enum.reject(fn {_, %{ts: ts}} -> ts < cutoff end) |> Map.new()
+
+    if map_size(sessions) > @max_sessions do
+      sessions
+      |> Enum.sort_by(fn {_, %{ts: ts}} -> -ts end)
+      |> Enum.take(@max_sessions)
+      |> Map.new()
+    else
+      sessions
+    end
+  end
+
+  defp now, do: System.monotonic_time(:millisecond)
+
+  def reset!(sid) do
+    signed_in = get(sid, & &1.signed_in)
+    update(sid, fn _ -> {:ok, %{seed() | signed_in: signed_in}} end)
+  end
+
+  # Auth -----------------------------------------------------------------
+
+  @password "lantern"
+
+  def demo_credentials, do: %{email: "ada@acme.test", password: @password}
+
+  def signed_in?(sid), do: get(sid, & &1.signed_in)
+
+  def sign_in(sid, email, password) do
+    update(sid, fn s ->
+      email = String.downcase(String.trim(email))
+
+      cond do
+        Enum.any?(s.members, &(&1.email == email)) and password == @password ->
+          {{:ok, Enum.find(s.members, &(&1.email == email))}, %{s | signed_in: true}}
+
+        true ->
+          {:error, s}
+      end
+    end)
+  end
+
+  def sign_out(sid), do: update(sid, fn s -> {:ok, %{s | signed_in: false}} end)
+
+  # Tickets --------------------------------------------------------------
+
+  def list_tickets(sid), do: get(sid, &Enum.sort_by(&1.tickets, fn t -> -t.id end))
+
+  def get_ticket(sid, id) do
+    case parse_id(id) do
+      nil -> nil
+      n -> get(sid, fn s -> Enum.find(s.tickets, &(&1.id == n)) end)
+    end
+  end
+
+  def counts(sid) do
+    tickets = list_tickets(sid)
 
     %{
       all: length(tickets),
       todo: Enum.count(tickets, &(&1.status == :todo)),
       in_progress: Enum.count(tickets, &(&1.status == :in_progress)),
-      done: Enum.count(tickets, &(&1.status == :done))
+      done: Enum.count(tickets, &(&1.status == :done)),
+      urgent: Enum.count(tickets, &(&1.priority == :urgent and &1.status != :done))
     }
   end
 
-  def create_ticket(attrs) do
-    Agent.get_and_update(__MODULE__, fn s ->
+  def create_ticket(sid, attrs) do
+    update(sid, fn s ->
       id = s.seq.ticket + 1
-      now = Date.utc_today()
 
       ticket = %{
         id: id,
@@ -58,74 +134,58 @@ defmodule DemoApp.Store do
         tag: Map.get(attrs, :tag, "ui"),
         assignee: Map.get(attrs, :assignee, "ada@acme.test"),
         project_id: Map.get(attrs, :project_id, 1),
-        date: now,
+        date: Date.utc_today(),
         comments: [],
         activity: [%{text: "Ticket created", at: "just now"}]
       }
 
-      {%{ticket: ticket}, %{s | tickets: [ticket | s.tickets], seq: %{s.seq | ticket: id}}}
+      {ticket, %{s | tickets: [ticket | s.tickets], seq: %{s.seq | ticket: id}}}
     end)
   end
 
-  def update_ticket(id, attrs) do
-    Agent.get_and_update(__MODULE__, fn s ->
-      {found, rest} = Enum.split_with(s.tickets, &(&1.id == id))
+  @ticket_fields [:title, :body, :status, :priority, :tag, :assignee, :project_id]
 
-      case found do
-        [ticket] ->
-          updated =
-            ticket
-            |> Map.merge(
-              Map.take(attrs, [:title, :body, :status, :priority, :tag, :assignee, :project_id])
-            )
-            |> touch(Map.get(attrs, :note, "Ticket updated"))
-
+  def update_ticket(sid, id, attrs) do
+    update(sid, fn s ->
+      case Enum.split_with(s.tickets, &(&1.id == id)) do
+        {[ticket], rest} ->
+          note = Map.get(attrs, :note, "Ticket updated")
+          updated = ticket |> Map.merge(Map.take(attrs, @ticket_fields)) |> touch(note)
           {updated, %{s | tickets: [updated | rest]}}
 
-        [] ->
+        _ ->
           {nil, s}
       end
     end)
   end
 
-  def delete_ticket(id) do
-    Agent.get_and_update(__MODULE__, fn s ->
-      {found, rest} = Enum.split_with(s.tickets, &(&1.id == id))
-
-      case found do
-        [ticket] -> {ticket, %{s | tickets: rest, trash: [ticket | s.trash]}}
-        [] -> {nil, s}
+  def delete_ticket(sid, id) do
+    update(sid, fn s ->
+      case Enum.split_with(s.tickets, &(&1.id == id)) do
+        {[ticket], rest} -> {ticket, %{s | tickets: rest, trash: [ticket | s.trash]}}
+        _ -> {nil, s}
       end
     end)
   end
 
-  def restore_ticket(id) do
-    Agent.get_and_update(__MODULE__, fn s ->
-      {found, trash} = Enum.split_with(s.trash, &(&1.id == id))
-
-      case found do
-        [ticket] -> {ticket, %{s | tickets: [ticket | s.tickets], trash: trash}}
-        [] -> {nil, s}
+  def restore_ticket(sid, id) do
+    update(sid, fn s ->
+      case Enum.split_with(s.trash, &(&1.id == id)) do
+        {[ticket], trash} -> {ticket, %{s | tickets: [ticket | s.tickets], trash: trash}}
+        _ -> {nil, s}
       end
     end)
   end
 
-  def add_comment(id, %{author: author, body: body}) do
-    Agent.get_and_update(__MODULE__, fn s ->
-      {found, rest} = Enum.split_with(s.tickets, &(&1.id == id))
-
-      case found do
-        [ticket] ->
+  def add_comment(sid, id, %{author: author, body: body}) do
+    update(sid, fn s ->
+      case Enum.split_with(s.tickets, &(&1.id == id)) do
+        {[ticket], rest} ->
           comment = %{author: author, initials: initials(author), body: body, at: "just now"}
-
-          updated =
-            ticket
-            |> Map.update!(:comments, &(&1 ++ [comment]))
-            |> touch("Comment added")
-
+          updated = ticket |> Map.update!(:comments, &(&1 ++ [comment])) |> touch("Comment added")
           {comment, %{s | tickets: [updated | rest]}}
 
-        [] ->
+        _ ->
           {nil, s}
       end
     end)
@@ -135,40 +195,55 @@ defmodule DemoApp.Store do
     Map.update!(ticket, :activity, &[%{text: text, at: "just now"} | &1])
   end
 
-  # ── projects ──
+  # Projects -------------------------------------------------------------
 
-  def list_projects, do: Agent.get(__MODULE__, & &1.projects)
+  def list_projects(sid), do: get(sid, & &1.projects)
 
-  def get_project(id) when is_integer(id) do
-    Agent.get(__MODULE__, fn s -> Enum.find(s.projects, &(&1.id == id)) end)
-  end
-
-  def get_project(id) when is_binary(id) do
-    case Integer.parse(id) do
-      {n, _} -> get_project(n)
-      :error -> nil
+  def get_project(sid, id) do
+    case parse_id(id) do
+      nil -> nil
+      n -> get(sid, fn s -> Enum.find(s.projects, &(&1.id == n)) end)
     end
   end
 
-  def project_tickets(project_id) do
-    Agent.get(__MODULE__, fn s -> Enum.filter(s.tickets, &(&1.project_id == project_id)) end)
-  end
-
-  # ── members ──
-
-  def list_members, do: Agent.get(__MODULE__, & &1.members)
-
-  def update_member_role(email, role) do
-    Agent.update(__MODULE__, fn s ->
-      members =
-        Enum.map(s.members, fn m -> if m.email == email, do: %{m | role: role}, else: m end)
-
-      %{s | members: members}
+  def project_tickets(sid, project_id) do
+    get(sid, fn s ->
+      s.tickets |> Enum.filter(&(&1.project_id == project_id)) |> Enum.sort_by(&(-&1.id))
     end)
   end
 
-  def invite_member(%{name: name, email: email, role: role}) do
-    Agent.get_and_update(__MODULE__, fn s ->
+  def create_project(sid, %{name: name, summary: summary}) do
+    update(sid, fn s ->
+      id = s.seq.project + 1
+
+      project = %{
+        id: id,
+        name: name,
+        summary: summary,
+        completed: 0,
+        scope: 0,
+        status: :active
+      }
+
+      {project, %{s | projects: s.projects ++ [project], seq: %{s.seq | project: id}}}
+    end)
+  end
+
+  # Members --------------------------------------------------------------
+
+  def list_members(sid), do: get(sid, & &1.members)
+
+  def update_member_role(sid, email, role) when role in @roles do
+    update(sid, fn s ->
+      members =
+        Enum.map(s.members, fn m -> if m.email == email, do: %{m | role: role}, else: m end)
+
+      {:ok, %{s | members: members}}
+    end)
+  end
+
+  def invite_member(sid, %{name: name, email: email, role: role}) do
+    update(sid, fn s ->
       if Enum.any?(s.members, &(&1.email == email)) do
         {{:error, :taken}, s}
       else
@@ -178,8 +253,25 @@ defmodule DemoApp.Store do
     end)
   end
 
-  def member_name(email) do
-    Agent.get(__MODULE__, fn s ->
+  def remove_member(sid, email) do
+    update(sid, fn s ->
+      case Enum.split_with(s.members, &(&1.email == email)) do
+        {[member], rest} -> {member, %{s | members: rest}}
+        _ -> {nil, s}
+      end
+    end)
+  end
+
+  def restore_member(sid, member) do
+    update(sid, fn s ->
+      if Enum.any?(s.members, &(&1.email == member.email)),
+        do: {:ok, s},
+        else: {:ok, %{s | members: s.members ++ [member]}}
+    end)
+  end
+
+  def member_name(sid, email) do
+    get(sid, fn s ->
       case Enum.find(s.members, &(&1.email == email)) do
         nil -> email
         m -> m.name
@@ -187,45 +279,65 @@ defmodule DemoApp.Store do
     end)
   end
 
-  # ── notifications ──
+  # Notifications --------------------------------------------------------
 
-  def list_notifications, do: Agent.get(__MODULE__, & &1.notifications)
+  def list_notifications(sid), do: get(sid, & &1.notifications)
 
-  def unread_count do
-    Agent.get(__MODULE__, fn s -> Enum.count(s.notifications, &(!&1.read)) end)
-  end
+  def unread_count(sid), do: get(sid, fn s -> Enum.count(s.notifications, &(!&1.read)) end)
 
-  def mark_read(id) do
-    Agent.update(__MODULE__, fn s ->
+  def mark_read(sid, id) do
+    update(sid, fn s ->
       notes = Enum.map(s.notifications, fn n -> if n.id == id, do: %{n | read: true}, else: n end)
-      %{s | notifications: notes}
+      {:ok, %{s | notifications: notes}}
     end)
   end
 
-  def mark_all_read do
-    Agent.update(__MODULE__, fn s ->
-      %{s | notifications: Enum.map(s.notifications, &%{&1 | read: true})}
+  def mark_all_read(sid) do
+    update(sid, fn s ->
+      {:ok, %{s | notifications: Enum.map(s.notifications, &%{&1 | read: true})}}
     end)
   end
 
-  # ── settings ──
-
-  def get_settings, do: Agent.get(__MODULE__, & &1.settings)
-
-  def update_settings(patch) do
-    Agent.update(__MODULE__, fn s -> %{s | settings: Map.merge(s.settings, patch)} end)
+  def clear_notifications(sid) do
+    update(sid, fn s -> {s.notifications, %{s | notifications: []}} end)
   end
 
-  def update_prefs(patch) do
-    Agent.update(__MODULE__, fn s ->
-      %{s | settings: %{s.settings | prefs: Map.merge(s.settings.prefs, patch)}}
+  def restore_notifications(sid, notes) do
+    update(sid, fn s -> {:ok, %{s | notifications: notes}} end)
+  end
+
+  # Settings -------------------------------------------------------------
+
+  def get_settings(sid), do: get(sid, & &1.settings)
+
+  def update_settings(sid, patch) do
+    update(sid, fn s -> {:ok, %{s | settings: Map.merge(s.settings, patch)}} end)
+  end
+
+  def update_prefs(sid, patch) do
+    update(sid, fn s ->
+      {:ok, %{s | settings: %{s.settings | prefs: Map.merge(s.settings.prefs, patch)}}}
     end)
   end
 
-  def statuses, do: @statuses
-  def priorities, do: @priorities
+  def update_appearance(sid, patch) do
+    update(sid, fn s ->
+      {:ok, %{s | settings: %{s.settings | appearance: Map.merge(s.settings.appearance, patch)}}}
+    end)
+  end
 
-  # ── seed ──
+  # Helpers --------------------------------------------------------------
+
+  defp parse_id(n) when is_integer(n), do: n
+
+  defp parse_id(id) when is_binary(id) do
+    case Integer.parse(id) do
+      {n, ""} -> n
+      _ -> nil
+    end
+  end
+
+  defp parse_id(_), do: nil
 
   defp initials(name) do
     name |> String.split() |> Enum.map(&String.first/1) |> Enum.join() |> String.upcase()
@@ -513,9 +625,11 @@ defmodule DemoApp.Store do
         name: "Ada Lovelace",
         email: "ada@acme.test",
         signature: "Ship it.",
-        prefs: %{mentions: true, review_requests: true, weekly_digest: false}
+        prefs: %{mentions: true, review_requests: true, weekly_digest: false},
+        appearance: %{theme: "system", preset: nil, density: "compact"}
       },
-      seq: %{ticket: 241, notification: 6}
+      seq: %{ticket: 241, project: 3, notification: 6},
+      signed_in: false
     }
   end
 end

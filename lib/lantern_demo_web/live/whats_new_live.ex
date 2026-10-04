@@ -12,42 +12,57 @@ defmodule LanternDemoWeb.WhatsNewLive do
     %{
       id: "blocks",
       title: "Page blocks",
-      desc: "Eight copy-paste pages — dashboard, list, detail, settings, form, login — each live and interactive.",
+      desc:
+        "Eight copy-paste pages — dashboard, list, detail, settings, form, login — each live and interactive.",
       thumb: "/wn/blocks.jpg",
       links: [{"Browse the blocks", "/docs/blocks"}, {"Dashboard", "/blocks/dashboard"}]
     },
     %{
       id: "toast",
       title: "Toast deck",
-      desc: "Stacked notifications with actions, sticky toasts, put_flash bridging and placement.",
+      desc:
+        "Stacked notifications with actions, sticky toasts, put_flash bridging and placement.",
       thumb: "/wn/toast.jpg",
       links: [{"Toasts", "/docs/feedback/toasts"}]
     },
     %{
       id: "shadcn",
       title: "shadcn preset",
-      desc: "One attribute — <Theme.theme preset=\"shadcn\" /> — restyles every component, light and dark.",
+      desc:
+        "One attribute — <Theme.theme preset=\"shadcn\" /> — restyles every component, light and dark.",
       thumb: "/wn/shadcn.jpg",
-      links: [{"Theming", "/docs/getting-started/theming"}, {"Colors & tokens", "/docs/foundations/colors"}]
+      links: [
+        {"Theming", "/docs/getting-started/theming"},
+        {"Colors & tokens", "/docs/foundations/colors"}
+      ]
     },
     %{
       id: "zag",
       title: "Zag widgets",
-      desc: "Dialogs, menus, select, tooltip, tabs and more now run on Zag state machines with real keyboard and ARIA.",
+      desc:
+        "Dialogs, menus, select, tooltip, tabs and more now run on Zag state machines with real keyboard and ARIA.",
       thumb: "/wn/zag.jpg",
-      links: [{"Modal & alert dialog", "/docs/overlays/dialogs"}, {"Select", "/docs/forms/select"}]
+      links: [
+        {"Modal & alert dialog", "/docs/overlays/dialogs"},
+        {"Select", "/docs/forms/select"}
+      ]
     },
     %{
       id: "lists",
       title: "Flat lists",
-      desc: "Group bands are gone: one flat list with a status glyph on every row and filter chips with counts.",
+      desc:
+        "Group bands are gone: one flat list with a status glyph on every row and filter chips with counts.",
       thumb: "/wn/lists.jpg",
-      links: [{"Tables & lists", "/docs/data-display/tables-lists"}, {"List block", "/blocks/list"}]
+      links: [
+        {"Tables & lists", "/docs/data-display/tables-lists"},
+        {"List block", "/blocks/list"}
+      ]
     },
     %{
       id: "ai",
       title: "AI legibility package",
-      desc: "llms.txt, an AGENTS rules block, installable skills and a linter so coding agents build with lantern correctly.",
+      desc:
+        "llms.txt, an AGENTS rules block, installable skills and a linter so coding agents build with lantern correctly.",
       thumb: "/wn/ai.jpg",
       links: [{"How it works", "/docs/getting-started/ai"}]
     }

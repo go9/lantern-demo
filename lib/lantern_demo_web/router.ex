@@ -13,6 +13,30 @@ defmodule LanternDemoWeb.Router do
     plug(:put_secure_browser_headers)
   end
 
+  # The /app demo keeps per-visitor state keyed by a random id in the session cookie.
+  def ensure_app_sid(conn, _opts) do
+    case Plug.Conn.get_session(conn, "app_sid") do
+      nil ->
+        sid = Base.url_encode64(:crypto.strong_rand_bytes(12), padding: false)
+        Plug.Conn.put_session(conn, "app_sid", sid)
+
+      _ ->
+        conn
+    end
+  end
+
+  pipeline :app_session do
+    plug(:ensure_app_sid)
+  end
+
+  scope "/app", LanternDemoWeb do
+    pipe_through(:browser)
+    pipe_through(:app_session)
+
+    live("/", AppLive, :index)
+    live("/*path", AppLive, :page)
+  end
+
   scope "/", LanternDemoWeb do
     pipe_through(:browser)
 

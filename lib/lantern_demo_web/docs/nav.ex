@@ -38,7 +38,8 @@ defmodule LanternDemoWeb.Docs.Nav do
         %{
           id: "ai",
           title: "AI legibility",
-          desc: "llms.txt, agent rules, skills and a linter so coding agents build with lantern correctly.",
+          desc:
+            "llms.txt, agent rules, skills and a linter so coding agents build with lantern correctly.",
           kind: :static
         }
       ]

@@ -17,7 +17,7 @@ defmodule LanternDemoWeb.Endpoint do
     at: "/",
     from: :lantern_demo,
     gzip: false,
-    only: ~w(app.js favicon.svg docs.css wn)
+    only: ~w(app.js favicon.svg docs.css acme.css wn)
   )
 
   plug(Plug.Static,

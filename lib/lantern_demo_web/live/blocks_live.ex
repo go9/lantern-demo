@@ -484,6 +484,7 @@ defmodule LanternDemoWeb.BlocksLive do
                 views={["list"]}
                 show_checkboxes={false}
                 search_field={:title}
+                row_navigate={& &1.href}
                 data-lantern-list-nav
               >
                 <:tab label="All" count={24} />
@@ -505,7 +506,6 @@ defmodule LanternDemoWeb.BlocksLive do
                     identifier={ticket.identifier}
                     title={ticket.title}
                     parent={ticket.parent}
-                    navigate={ticket.href}
                     selected={ticket.selected}
                     data-lantern-list-item
                   >
