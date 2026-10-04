@@ -152,6 +152,27 @@ defmodule LanternDemoWeb.DocsLiveTest do
     end
   end
 
+  test "search index covers every page and merged-page component, with introspected keywords" do
+    conn = build_conn() |> get("/docs/search.json")
+    assert json_response(conn, 200) |> length() >= 80
+    idx = json_response(conn, 200)
+
+    for {s, p} <- LanternDemoWeb.Docs.Nav.all_pages() do
+      assert Enum.any?(idx, &(&1["h"] == LanternDemoWeb.Docs.Nav.path(p, s))), "#{p.id} missing from the index"
+    end
+
+    kw = fn title -> idx |> Enum.find(&(&1["t"] == title)) |> Map.fetch!("k") end
+    assert kw.("Toasts") =~ "toast_group"
+    assert kw.("Data table") =~ "row_navigate"
+    assert kw.("Spacing & stack") =~ "stack"
+    assert kw.("Status & indicators") =~ "progress ring"
+    assert Enum.any?(idx, &(&1["t"] == "Tooltip" and &1["c"] =~ "Popover & tooltip"))
+
+    html = build_conn() |> get("/docs/forms/buttons") |> html_response(200)
+    assert html =~ ~s(id="docs-search")
+    refute html =~ "<dialog"
+  end
+
   test "legacy /components URLs redirect into the new IA" do
     for {old, new} <- [
           {"/components/toast", "/docs/feedback/toasts"},

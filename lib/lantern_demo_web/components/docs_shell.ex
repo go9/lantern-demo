@@ -15,6 +15,8 @@ defmodule LanternDemoWeb.DocsShell do
   alias LanternUI.Components.Layout
   alias LanternUI.Components.Theme
 
+  @suggest ~w(/docs/getting-started/installation /docs/forms/buttons /docs/data-display/tables-lists /docs/data-display/data-table /docs/feedback/toasts /docs/overlays/dialogs /docs/overlays/command /docs/foundations/status /docs/getting-started/theming /blocks/list)
+
   attr(:current, :string, required: true)
   attr(:theme, :string, default: "system")
   attr(:density, :string, default: "compact")
@@ -29,7 +31,7 @@ defmodule LanternDemoWeb.DocsShell do
       |> assign(:sections, Nav.sections())
       |> assign(:section, section)
       |> assign(:page, page)
-      |> assign(:search_items, search_items())
+      |> assign(:suggest, @suggest)
 
     ~H"""
     <Layout.app_shell
@@ -97,17 +99,35 @@ defmodule LanternDemoWeb.DocsShell do
       </:sidebar>
 
       <Theme.theme />
-      <dialog id="docs-search" class="docs-search" phx-hook="DocsSearch" aria-label="Search docs">
-        <input type="text" class="docs-search-input" placeholder="Search components, guides, blocks…" autocomplete="off" spellcheck="false" aria-label="Search docs" />
-        <ul class="docs-search-list" role="listbox">
-          <li :for={i <- @search_items} data-text={i.text} role="option">
-            <a href={i.href} data-phx-link="redirect" data-phx-link-state="push">
-              <span>{i.title}</span><small>{i.crumb}</small>
-            </a>
-          </li>
-        </ul>
-        <div class="docs-search-empty" hidden>No results.</div>
-      </dialog>
+      <%!-- Not a <dialog>: a plain overlay behaves the same in every browser and survives
+          LiveView patches (phx-update="ignore" — the hook owns this subtree). --%>
+      <div
+        id="docs-search"
+        class="docs-search"
+        phx-hook="DocsSearch"
+        phx-update="ignore"
+        data-index="/docs/search.json"
+        data-suggest={Jason.encode!(@suggest)}
+        hidden
+      >
+        <div class="docs-search-backdrop" data-close></div>
+        <div class="docs-search-panel" role="dialog" aria-modal="true" aria-label="Search docs">
+          <input
+            type="text"
+            class="docs-search-input"
+            placeholder="Search components, props, guides, blocks…"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="docs-search-list"
+            aria-label="Search docs"
+          />
+          <div id="docs-search-list" class="docs-search-list" role="listbox"></div>
+          <div class="docs-search-foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+        </div>
+      </div>
       {render_slot(@inner_block)}
     </Layout.app_shell>
 
@@ -146,46 +166,4 @@ defmodule LanternDemoWeb.DocsShell do
         {Nav.section(sid), nil}
     end
   end
-
-  # One search entry per page, plus one per member of a merged page so
-  # "alert dialog" finds its section of the "Modal & alert dialog" page.
-  defp search_items do
-    for {s, p} <- Nav.all_pages(),
-        item <- entries(s, p) do
-      item
-    end
-  end
-
-  defp entries(s, p) do
-    base = Nav.path(p, s)
-
-    page = %{
-      title: p.title,
-      crumb: s.title,
-      href: base,
-      text: down("#{p.title} #{s.title} #{p.desc}")
-    }
-
-    members =
-      case p do
-        %{members: [_, _ | _] = ms} ->
-          for m <- ms do
-            t = LanternDemoWeb.Docs.Nav.member_title(m)
-
-            %{
-              title: t,
-              crumb: "#{s.title} › #{p.title}",
-              href: "#{base}##{m}",
-              text: down("#{t} #{p.title} #{s.title}")
-            }
-          end
-
-        _ ->
-          []
-      end
-
-    [page | members]
-  end
-
-  defp down(s), do: String.downcase(s)
 end

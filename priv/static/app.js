@@ -224,71 +224,189 @@ const DemoTheming = {
 }
 
 
-// Cmd/Ctrl+K docs search: a native <dialog> with a client-side filtered list of
-// every docs page (+ merged-page members). Server-free so it works on every
-// LiveView that renders the docs shell.
+// Cmd/Ctrl+K docs search. A plain overlay (not <dialog>) so it behaves the same in every
+// browser; the index comes from /docs/search.json (one entry per page and per component
+// inside a merged page, with introspected function/attr names as keywords).
+let docsIndex = null
+const loadDocsIndex = (url) =>
+  (docsIndex ||= fetch(url).then((r) => r.json()).catch(() => { docsIndex = null; return [] }))
+
+const RECENT_KEY = "lui-docs-search-recent"
+
+const scoreEntry = (e, terms) => {
+  const title = e.t.toLowerCase()
+  const words = title.split(/[^a-z0-9_]+/)
+  let total = 0
+  for (const t of terms) {
+    let s = 0
+    if (title === t) s = 100
+    else if (title.startsWith(t)) s = 80
+    else if (words.some((w) => w.startsWith(t))) s = 65
+    else if (title.includes(t)) s = 45
+    else if (e.k.split(" ").includes(t)) s = 38
+    else if (e.k.split(" ").some((w) => w.startsWith(t))) s = 28
+    else if (e.k.includes(t)) s = 16
+    else if (t.length > 2 && isSubsequence(t, title)) s = 8
+    if (!s) return 0
+    total += s
+  }
+  return total + (e.p || 0) * 3 - e.t.length / 100
+}
+
+const isSubsequence = (needle, hay) => {
+  let i = 0
+  for (const ch of hay) if (ch === needle[i]) i++
+  return i === needle.length
+}
+
 const DocsSearch = {
   mounted() {
-    const dlg = this.el
-    this.input = dlg.querySelector("input")
-    this.items = [...dlg.querySelectorAll("li")]
-    this.empty = dlg.querySelector(".docs-search-empty")
-    this.sel = 0
-    this.open = () => {
-      if (dlg.open) return
-      this.input.value = ""
-      this.filter()
-      dlg.showModal()
-      this.input.focus()
-    }
+    const el = this.el
+    this.input = el.querySelector("input")
+    this.list = el.querySelector(".docs-search-list")
+    this.active = 0
+    this.shown = []
+    this.opener = null
+
     this.onKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && !e.defaultPrevented) {
+      const k = e.key.toLowerCase()
+      if ((e.metaKey || e.ctrlKey) && k === "k") {
         e.preventDefault()
-        dlg.open ? dlg.close() : this.open()
+        this.isOpen() ? this.close() : this.open()
+      } else if (k === "/" && !this.isOpen() && !/^(input|textarea|select)$/i.test(e.target.tagName) && !e.target.isContentEditable) {
+        e.preventDefault()
+        this.open()
+      } else if (k === "escape" && this.isOpen()) {
+        e.preventDefault()
+        this.close()
       }
     }
-    this.onOpenClick = (e) => {
-      if (e.target.closest("[data-docs-search-open]")) this.open()
+    this.onDocClick = (e) => {
+      if (e.target.closest("[data-docs-search-open]")) {
+        e.preventDefault()
+        this.open(e.target.closest("[data-docs-search-open]"))
+      }
     }
     window.addEventListener("keydown", this.onKey)
-    document.addEventListener("click", this.onOpenClick)
-    this.input.addEventListener("input", () => this.filter())
-    dlg.addEventListener("click", (e) => {
-      if (e.target === dlg || e.target.closest("a")) dlg.close()
+    document.addEventListener("click", this.onDocClick)
+
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]")) return this.close()
+      const a = e.target.closest("a[data-result]")
+      if (a) this.choose(a)
     })
+    this.list.addEventListener("mousemove", (e) => {
+      const a = e.target.closest("a[data-result]")
+      if (a && Number(a.dataset.i) !== this.active) this.setActive(Number(a.dataset.i), false)
+    })
+    this.input.addEventListener("input", () => this.render())
     this.input.addEventListener("keydown", (e) => {
-      const vis = this.visible()
-      if (e.key === "ArrowDown") { e.preventDefault(); this.move(vis, 1) }
-      else if (e.key === "ArrowUp") { e.preventDefault(); this.move(vis, -1) }
-      else if (e.key === "Enter") { e.preventDefault(); vis[this.sel]?.querySelector("a").click() }
+      if (e.key === "ArrowDown") { e.preventDefault(); this.setActive(Math.min(this.active + 1, this.shown.length - 1)) }
+      else if (e.key === "ArrowUp") { e.preventDefault(); this.setActive(Math.max(this.active - 1, 0)) }
+      else if (e.key === "Home") { e.preventDefault(); this.setActive(0) }
+      else if (e.key === "End") { e.preventDefault(); this.setActive(this.shown.length - 1) }
+      else if (e.key === "Enter") {
+        e.preventDefault()
+        const a = this.list.querySelector(`a[data-i="${this.active}"]`)
+        if (a) { this.choose(a); a.click() }
+      } else if (e.key === "Tab") e.preventDefault() // focus trap: the input is the only stop
     })
+    loadDocsIndex(el.dataset.index) // warm the cache
   },
+
   destroyed() {
     window.removeEventListener("keydown", this.onKey)
-    document.removeEventListener("click", this.onOpenClick)
+    document.removeEventListener("click", this.onDocClick)
+    document.documentElement.classList.remove("docs-search-open")
   },
-  visible() { return this.items.filter((li) => !li.hidden) },
-  filter() {
-    const terms = this.input.value.toLowerCase().split(/\s+/).filter(Boolean)
-    this.items.forEach((li) => {
-      li.hidden = !terms.every((t) => li.dataset.text.includes(t))
+
+  isOpen() { return !this.el.hidden },
+
+  open(opener) {
+    if (this.isOpen()) return
+    // Safari doesn't focus a button on click, so activeElement would be <body>
+    this.opener = opener || document.activeElement
+    this.el.hidden = false
+    document.documentElement.classList.add("docs-search-open")
+    this.input.value = ""
+    this.render()
+    this.input.focus()
+  },
+
+  close() {
+    if (!this.isOpen()) return
+    this.el.hidden = true
+    document.documentElement.classList.remove("docs-search-open")
+    if (this.opener && document.contains(this.opener) && this.opener.focus) this.opener.focus()
+  },
+
+  choose(a) {
+    const href = a.getAttribute("href")
+    try {
+      const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]").filter((h) => h !== href)
+      recent.unshift(href)
+      localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 5)))
+    } catch (_) {}
+    this.opener = null // navigation moves focus; don't pull it back
+    this.close()
+    const hash = href.split("#")[1]
+    if (hash) setTimeout(() => document.getElementById(hash)?.scrollIntoView(), 450)
+  },
+
+  async render() {
+    const index = await loadDocsIndex(this.el.dataset.index)
+    const q = this.input.value.trim().toLowerCase()
+    let groups
+    if (!q) {
+      const byHref = new Map(index.map((e) => [e.h, e]))
+      let recent = []
+      try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]") } catch (_) {}
+      const sug = JSON.parse(this.el.dataset.suggest || "[]")
+      groups = [
+        ["Recent", recent.map((h) => byHref.get(h)).filter(Boolean)],
+        ["Suggested", sug.map((h) => byHref.get(h)).filter(Boolean)],
+      ].filter(([, items]) => items.length)
+    } else {
+      const terms = q.split(/\s+/)
+      const hits = index
+        .map((e) => [scoreEntry(e, terms), e])
+        .filter(([s]) => s > 0)
+        .sort((a, b) => b[0] - a[0])
+        .slice(0, 30)
+        .map(([, e]) => e)
+      groups = hits.length ? [["Results", hits]] : []
+    }
+    this.shown = groups.flatMap(([, items]) => items)
+    this.active = 0
+    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))
+    if (!this.shown.length) {
+      this.list.innerHTML = `<div class="docs-search-empty">No results for “${esc(q)}”.<br><small>Try a component name (“badge”), a prop (“row_navigate”) or a function (“toast_group”).</small></div>`
+      this.input.removeAttribute("aria-activedescendant")
+      return
+    }
+    let i = 0
+    this.list.innerHTML = groups
+      .map(([label, items]) =>
+        `<div class="docs-search-group" role="presentation">${label}</div>` +
+        items.map((e) => `<a id="docs-search-r${i}" role="option" tabindex="-1" data-result data-i="${i++}" href="${esc(e.h)}" data-phx-link="redirect" data-phx-link-state="push"><span>${esc(e.t)}</span><small>${esc(e.c)}</small></a>`).join("")
+      )
+      .join("")
+    this.setActive(0)
+  },
+
+  setActive(i, scroll = true) {
+    this.active = i
+    this.list.querySelectorAll("a[data-result]").forEach((a) => {
+      const on = Number(a.dataset.i) === i
+      a.setAttribute("aria-selected", on ? "true" : "false")
+      if (on) {
+        this.input.setAttribute("aria-activedescendant", a.id)
+        if (scroll) a.scrollIntoView({ block: "nearest" })
+      }
     })
-    this.sel = 0
-    this.mark()
-    this.empty.hidden = this.visible().length > 0
-  },
-  move(vis, d) {
-    if (!vis.length) return
-    this.sel = (this.sel + d + vis.length) % vis.length
-    this.mark()
-    vis[this.sel].scrollIntoView({ block: "nearest" })
-  },
-  mark() {
-    const vis = this.visible()
-    this.items.forEach((li) => li.querySelector("a").removeAttribute("aria-selected"))
-    vis[this.sel]?.querySelector("a").setAttribute("aria-selected", "true")
   },
 }
+
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 

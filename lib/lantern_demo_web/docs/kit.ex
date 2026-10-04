@@ -254,6 +254,9 @@ defmodule LanternDemoWeb.Docs.Kit do
     title |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
   end
 
+  @doc "member slug → [{module, function}] used for the props tables (and the search index)."
+  def api_map, do: @api_map
+
   attr(:member, :string, required: true)
 
   def api_section(assigns) do

@@ -48,6 +48,7 @@ defmodule LanternDemoWeb.Router do
     live("/preview/app-shell", AppShellPreviewLive)
     live("/docs/data-display/data-table", DataTableDemo)
     live("/docs/getting-started/theming", ThemingLive)
+    get("/docs/search.json", SearchController, [])
     live("/docs", DocsLive, :index)
     live("/docs/:section", DocsLive, :section)
     live("/docs/:section/:page", DocsLive, :page)
