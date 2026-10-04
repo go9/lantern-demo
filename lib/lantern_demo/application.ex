@@ -15,6 +15,7 @@ defmodule LanternDemo.Application do
       {Phoenix.PubSub, name: LanternDemo.PubSub},
       LanternDemo.SandboxManager,
       LanternDemo.S3Sandbox.Reaper,
+      DemoApp.Store,
       LanternDemoWeb.Endpoint
     ]
 
