@@ -130,7 +130,18 @@ defmodule LanternDemoWeb.App.Pages.Ticket do
 
   defp change(socket, field, value, label, fmt) do
     t = socket.assigns.ticket
-    value = if field in [:status, :priority], do: String.to_existing_atom(value), else: value
+
+    value =
+      case field do
+        :status ->
+          Helpers.to_atom_in(value, [:todo, :in_progress, :done], t.status)
+
+        :priority ->
+          Helpers.to_atom_in(value, [:low, :medium, :high, :urgent], t.priority)
+
+        :assignee ->
+          if Enum.any?(socket.assigns.members, &(&1.email == value)), do: value, else: t.assignee
+      end
 
     if Map.get(t, field) == value do
       {:noreply, socket}

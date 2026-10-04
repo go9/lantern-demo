@@ -56,20 +56,26 @@ defmodule LanternDemoWeb.App.Pages.Team do
              |> Phoenix.LiveView.push_event("acme:reset-form", %{id: "invite-form"})
              |> LanternDemoWeb.AppLive.toast(
                :success,
-               "#{member.name} was invited as #{f["role"] || "member"}.", title: "Invite sent")}
+               "#{member.name} was invited as #{f["role"] || "member"}.",
+               title: "Invite sent"
+             )}
 
           {:error, :taken} ->
             {:noreply, error_toast(socket, "#{email} is already on the team.")}
+
+          {:error, :limit} ->
+            {:noreply,
+             error_toast(socket, "This demo workspace has reached its team size limit.")}
         end
     end
   end
 
   def handle_event("set_role", %{"id" => "role-" <> rest, "value" => v}, socket) do
     value = v |> List.wrap() |> List.first()
-    idx = rest |> String.replace_suffix("-select", "") |> String.to_integer()
-    member = Enum.at(socket.assigns.members, idx)
+    idx = rest |> String.replace_suffix("-select", "") |> Helpers.to_int(-1)
+    member = if idx >= 0, do: Enum.at(socket.assigns.members, idx)
 
-    if member && member.role != value do
+    if member && value in ~w(admin member viewer) && member.role != value do
       Store.update_member_role(socket.assigns.sid, member.email, value)
 
       {:noreply,

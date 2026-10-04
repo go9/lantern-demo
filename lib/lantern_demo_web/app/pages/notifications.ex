@@ -53,7 +53,7 @@ defmodule LanternDemoWeb.App.Pages.Notifications do
   end
 
   def handle_event("open_note", %{"id" => id}, socket) do
-    Store.mark_read(socket.assigns.sid, String.to_integer(id))
+    Store.mark_read(socket.assigns.sid, LanternDemoWeb.App.Helpers.to_int(id, 0))
     {:noreply, socket}
   end
 

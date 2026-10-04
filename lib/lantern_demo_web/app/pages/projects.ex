@@ -58,19 +58,22 @@ defmodule LanternDemoWeb.App.Pages.Projects do
         {:noreply, error_toast(socket, "A project named “#{name}” already exists.")}
 
       true ->
-        project =
-          Store.create_project(socket.assigns.sid, %{
-            name: name,
-            summary: String.trim(p["summary"] || "")
-          })
+        case Store.create_project(socket.assigns.sid, %{
+               name: name,
+               summary: String.trim(p["summary"] || "")
+             }) do
+          nil ->
+            {:noreply, error_toast(socket, "This demo workspace has reached its project limit.")}
 
-        {:noreply,
-         socket
-         |> mount_page(%{})
-         |> Phoenix.LiveView.push_event("acme:reset-form", %{id: "project-form"})
-         |> LanternDemoWeb.AppLive.toast(:success, "“#{project.name}” is ready for tickets.",
-           title: "Project created"
-         )}
+          project ->
+            {:noreply,
+             socket
+             |> mount_page(%{})
+             |> Phoenix.LiveView.push_event("acme:reset-form", %{id: "project-form"})
+             |> LanternDemoWeb.AppLive.toast(:success, "“#{project.name}” is ready for tickets.",
+               title: "Project created"
+             )}
+        end
     end
   end
 

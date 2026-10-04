@@ -120,27 +120,37 @@ defmodule DemoApp.Store do
     }
   end
 
+  # Per-visitor caps keep a public demo from growing without bound.
+  @max_tickets 300
+  @max_projects 30
+  @max_members 50
+
   def create_ticket(sid, attrs) do
-    update(sid, fn s ->
-      id = s.seq.ticket + 1
-
-      ticket = %{
-        id: id,
-        identifier: "##{id}",
-        title: attrs.title,
-        body: Map.get(attrs, :body, ""),
-        status: Map.get(attrs, :status, :todo),
-        priority: Map.get(attrs, :priority, :medium),
-        tag: Map.get(attrs, :tag, "ui"),
-        assignee: Map.get(attrs, :assignee, "ada@acme.test"),
-        project_id: Map.get(attrs, :project_id, 1),
-        date: Date.utc_today(),
-        comments: [],
-        activity: [%{text: "Ticket created", at: "just now"}]
-      }
-
-      {ticket, %{s | tickets: [ticket | s.tickets], seq: %{s.seq | ticket: id}}}
+    update(sid, fn
+      %{tickets: tickets} = s when length(tickets) >= @max_tickets -> {nil, s}
+      s -> do_create_ticket(s, attrs)
     end)
+  end
+
+  defp do_create_ticket(s, attrs) do
+    id = s.seq.ticket + 1
+
+    ticket = %{
+      id: id,
+      identifier: "##{id}",
+      title: attrs.title,
+      body: Map.get(attrs, :body, ""),
+      status: Map.get(attrs, :status, :todo),
+      priority: Map.get(attrs, :priority, :medium),
+      tag: Map.get(attrs, :tag, "ui"),
+      assignee: Map.get(attrs, :assignee, "ada@acme.test"),
+      project_id: Map.get(attrs, :project_id, 1),
+      date: Date.utc_today(),
+      comments: [],
+      activity: [%{text: "Ticket created", at: "just now"}]
+    }
+
+    {ticket, %{s | tickets: [ticket | s.tickets], seq: %{s.seq | ticket: id}}}
   end
 
   @ticket_fields [:title, :body, :status, :priority, :tag, :assignee, :project_id]
@@ -181,7 +191,13 @@ defmodule DemoApp.Store do
     update(sid, fn s ->
       case Enum.split_with(s.tickets, &(&1.id == id)) do
         {[ticket], rest} ->
-          comment = %{author: author, initials: initials(author), body: body, at: "just now"}
+          comment = %{
+            author: author,
+            initials: initials(author),
+            body: String.slice(body, 0, 2000),
+            at: "just now"
+          }
+
           updated = ticket |> Map.update!(:comments, &(&1 ++ [comment])) |> touch("Comment added")
           {comment, %{s | tickets: [updated | rest]}}
 
@@ -212,21 +228,26 @@ defmodule DemoApp.Store do
     end)
   end
 
-  def create_project(sid, %{name: name, summary: summary}) do
-    update(sid, fn s ->
-      id = s.seq.project + 1
-
-      project = %{
-        id: id,
-        name: name,
-        summary: summary,
-        completed: 0,
-        scope: 0,
-        status: :active
-      }
-
-      {project, %{s | projects: s.projects ++ [project], seq: %{s.seq | project: id}}}
+  def create_project(sid, attrs) do
+    update(sid, fn
+      %{projects: projects} = s when length(projects) >= @max_projects -> {nil, s}
+      s -> do_create_project(s, attrs)
     end)
+  end
+
+  defp do_create_project(s, %{name: name, summary: summary}) do
+    id = s.seq.project + 1
+
+    project = %{
+      id: id,
+      name: name,
+      summary: summary,
+      completed: 0,
+      scope: 0,
+      status: :active
+    }
+
+    {project, %{s | projects: s.projects ++ [project], seq: %{s.seq | project: id}}}
   end
 
   # Members --------------------------------------------------------------
@@ -244,11 +265,16 @@ defmodule DemoApp.Store do
 
   def invite_member(sid, %{name: name, email: email, role: role}) do
     update(sid, fn s ->
-      if Enum.any?(s.members, &(&1.email == email)) do
-        {{:error, :taken}, s}
-      else
-        member = %{name: name, email: email, role: role, initials: initials(name)}
-        {{:ok, member}, %{s | members: s.members ++ [member]}}
+      cond do
+        Enum.any?(s.members, &(&1.email == email)) ->
+          {{:error, :taken}, s}
+
+        length(s.members) >= @max_members ->
+          {{:error, :limit}, s}
+
+        true ->
+          member = %{name: name, email: email, role: role, initials: initials(name)}
+          {{:ok, member}, %{s | members: s.members ++ [member]}}
       end
     end)
   end

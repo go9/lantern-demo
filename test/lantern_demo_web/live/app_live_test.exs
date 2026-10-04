@@ -306,6 +306,33 @@ defmodule LanternDemoWeb.AppLiveTest do
     end
   end
 
+  describe "hostile client input" do
+    test "garbage select values and ids never crash the view" do
+      {sid, view, _} = page("/app/tickets/241")
+      render_hook(view, "set_field", %{"id" => "ticket-status-select", "value" => ["not-a-status"]})
+      render_hook(view, "set_field", %{"id" => "ticket-priority-select", "value" => ["x"]})
+      render_hook(view, "set_field", %{"id" => "ticket-assignee-select", "value" => ["nobody@x.test"]})
+      assert %{status: :in_progress, priority: :high, assignee: "ada@acme.test"} = Store.get_ticket(sid, 241)
+
+      {_sid, team, _} = page("/app/team")
+      render_hook(team, "set_role", %{"id" => "role-zz-select", "value" => ["admin"]})
+      render_hook(team, "set_role", %{"id" => "role-9-select", "value" => ["admin"]})
+      render_hook(team, "set_role", %{"id" => "role-1-select", "value" => ["superuser"]})
+      assert render(team) =~ "Grace Hopper"
+
+      {_sid, notes, _} = page("/app/notifications")
+      render_click(notes, "open_note", %{"id" => "abc"})
+      assert render(notes) =~ "Inbox"
+    end
+
+    test "the demo workspace is capped" do
+      sid = new_sid()
+      for i <- 1..400, do: Store.create_ticket(sid, %{title: "t#{i}"})
+      assert length(Store.list_tickets(sid)) == 300
+      assert Store.create_ticket(sid, %{title: "one more"}) == nil
+    end
+  end
+
   describe "command palette" do
     test "searches tickets and navigates" do
       {_sid, view, _} = page("/app")

@@ -4,7 +4,9 @@ defmodule LanternDemoWeb.App.Helpers do
   def status_label(:todo), do: "To do"
   def status_label(:in_progress), do: "In progress"
   def status_label(:done), do: "Done"
-  def status_label(s) when is_binary(s), do: s |> String.to_existing_atom() |> status_label()
+
+  def status_label(s) when is_binary(s),
+    do: s |> to_atom_in([:todo, :in_progress, :done], :todo) |> status_label()
 
   def priority_label(p), do: p |> to_string() |> String.capitalize()
 
@@ -63,9 +65,17 @@ defmodule LanternDemoWeb.App.Helpers do
     end
   end
 
+  @doc "Client-sent string → one of `allowed` atoms (never creates atoms)."
   def to_atom_in(value, allowed, default) do
     value = to_string(value)
     Enum.find(allowed, default, &(Atom.to_string(&1) == value))
+  end
+
+  def to_int(value, default) do
+    case Integer.parse(to_string(value)) do
+      {n, ""} -> n
+      _ -> default
+    end
   end
 
   @doc "First value of a Zag select's `on_change` payload (list or scalar)."

@@ -111,10 +111,10 @@ defmodule LanternDemoWeb.App.Pages.TicketForm do
     %{
       title: String.trim(form["title"]),
       body: String.trim(form["body"]),
-      status: String.to_existing_atom(form["status"]),
-      priority: String.to_existing_atom(form["priority"]),
+      status: Helpers.to_atom_in(form["status"], [:todo, :in_progress, :done], :todo),
+      priority: Helpers.to_atom_in(form["priority"], [:low, :medium, :high, :urgent], :medium),
       assignee: form["assignee"],
-      project_id: String.to_integer(form["project_id"]),
+      project_id: Helpers.to_int(form["project_id"], 1),
       tag: String.trim(form["tag"])
     }
   end
@@ -131,8 +131,22 @@ defmodule LanternDemoWeb.App.Pages.TicketForm do
   end
 
   defp save(socket, form) do
-    t = Store.create_ticket(socket.assigns.sid, attrs(form))
+    case Store.create_ticket(socket.assigns.sid, attrs(form)) do
+      nil ->
+        {:noreply,
+         LanternDemoWeb.AppLive.toast(
+           socket,
+           :error,
+           "This demo workspace is full — reset it in Settings to start fresh.",
+           title: "Ticket limit reached"
+         )}
 
+      t ->
+        created(socket, t)
+    end
+  end
+
+  defp created(socket, t) do
     {:noreply,
      socket
      |> LanternDemoWeb.AppLive.toast(:success, "“#{t.title}” was filed as #{t.identifier}.",
