@@ -7,7 +7,7 @@ defmodule LanternDemoWeb.BlocksLiveTest do
   @endpoint LanternDemoWeb.Endpoint
 
   @pages [
-    {"app-shell", ["id=\"demo-app\"", "Getting started", "What's new", "New ticket"]},
+    {"app-shell", ["id=\"demo-app\"", "Getting started", "← Blocks", "New ticket"]},
     {"dashboard",
      ["Merged per day", "Recent activity", "Open tickets", "dashboard-merged", "filter_activity"]},
     {"list",
@@ -39,29 +39,38 @@ defmodule LanternDemoWeb.BlocksLiveTest do
      ["Danger zone", "Delete workspace", "No tickets yet", "Loading tickets", "timed out"]}
   ]
 
-  test "what's new lists every change with links" do
+  test "what's new is a landing page: hero, one card per change, one deliberate button" do
     html = build_conn() |> get("/whats-new") |> html_response(200)
 
-    assert html =~ "What&#39;s new" or html =~ "What's new"
+    assert html =~ "wn-hero"
+    assert html =~ "Open the demo app"
+    assert length(Regex.scan(~r/class="wn-card"/, html)) == 6
 
-    for path <- [
-          "/blocks/app-shell",
-          "/blocks/dashboard",
-          "/blocks/list",
-          "/blocks/detail",
-          "/blocks/settings",
-          "/blocks/form",
-          "/blocks/login",
-          "/blocks/destructive",
-          "/docs/feedback/toasts",
-          "/docs/getting-started/theming",
-          "/docs/forms/select",
-          "/docs/data-display/tables-lists"
-        ] do
-      assert html =~ path, "missing link #{path} on whats-new"
+    for title <- ["Page blocks", "Toast deck", "shadcn preset", "Zag widgets", "Flat lists", "AI legibility package"] do
+      assert html =~ title, "missing card #{title}"
     end
 
+    for thumb <- ~w(blocks toast shadcn zag lists ai) do
+      assert html =~ "/wn/#{thumb}.jpg"
+      assert File.exists?("priv/static/wn/#{thumb}.jpg")
+    end
+
+    for path <- ["/docs/blocks", "/blocks/dashboard", "/blocks/list", "/docs/feedback/toasts",
+                 "/docs/getting-started/theming", "/docs/foundations/colors", "/docs/overlays/dialogs",
+                 "/docs/forms/select", "/docs/data-display/tables-lists", "/docs/getting-started/ai"] do
+      assert html =~ ~s(href="#{path}"), "missing link #{path} on whats-new"
+    end
+
+    # the single entry into the demo app; no other docs page links to it
+    assert length(Regex.scan(~r/href="\/app"/, html)) == 1
     assert html =~ ~s(data-part="preset-toggle")
+  end
+
+  test "no docs page other than what's new links into /app" do
+    for {s, p} <- LanternDemoWeb.Docs.Nav.all_pages(), p.kind in [:members, :static] do
+      html = build_conn() |> get(LanternDemoWeb.Docs.Nav.path(p, s)) |> html_response(200)
+      refute html =~ ~s(href="/app), "#{p.id} links into the app"
+    end
   end
 
   test "every block page renders its recipe content and the chrome switch" do

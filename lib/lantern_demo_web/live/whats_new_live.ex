@@ -84,7 +84,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
             flat lists and a package that makes lantern legible to coding agents.
           </p>
           <div class="wn-cta">
-            <Button.button variant="solid" size="lg" navigate="/app">Open the demo app</Button.button>
+            <Button.button variant="solid" size="lg" href="/app">Open the demo app</Button.button>
             <span class="wn-cta-note">A fully working ticket tracker built only from lantern components.</span>
           </div>
         </header>
