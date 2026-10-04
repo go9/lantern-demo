@@ -29,7 +29,7 @@ defmodule LanternDemo.MixProject do
       # which now carries the toast deck, Theme preset="shadcn", the Zag
       # select (client + controlled modes), stack/1, and test/support/blocks
       # page recipes. Never merge this to main (auto-deploys + Hex pin).
-      {:lantern_ui, github: "go9/lantern-ui", ref: "ce7602de40cc31f6d11c47ad9617277396abedc7", override: true},
+      {:lantern_ui, github: "go9/lantern-ui", ref: "a5e176148f6044b8a61ffc7161b1211d025ef0dc", override: true},
       {:lantern_s3, github: "go9/lantern-s3"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
