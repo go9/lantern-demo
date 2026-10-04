@@ -191,7 +191,16 @@ defmodule LanternDemoWeb.Docs.Kit do
     """
   end
 
-  attr(:id, :string, required: true)
+  attr(:id, :string, default: nil)
+  attr(:code, :string, required: true)
+
+  def snippet(assigns) do
+    ~H"""
+    <pre class="docs-pre"><code>{String.trim(@code)}</code></pre>
+    """
+  end
+
+  attr(:id, :string, default: nil)
   attr(:code, :string, required: true)
 
   def code_block(assigns) do

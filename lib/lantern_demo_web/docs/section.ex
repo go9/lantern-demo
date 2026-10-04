@@ -3,7 +3,7 @@ defmodule LanternDemoWeb.Docs.Section do
   defmacro __using__(_) do
     quote do
       use Phoenix.Component
-      import LanternDemoWeb.Docs.Kit, only: [demo_section: 1, code_block: 1, command_demo_code: 0]
+      import LanternDemoWeb.Docs.Kit, only: [demo_section: 1, code_block: 1, snippet: 1, command_demo_code: 0]
 
       alias LanternUI.Charts, warn: false
       alias LanternUI.Charts, warn: false

@@ -96,20 +96,19 @@ defmodule LanternDemoWeb.DocsShell do
       </:sidebar>
 
       <Theme.theme />
+      <dialog id="docs-search" class="docs-search" phx-hook="DocsSearch" aria-label="Search docs">
+        <input type="text" class="docs-search-input" placeholder="Search components, guides, blocks…" autocomplete="off" spellcheck="false" aria-label="Search docs" />
+        <ul class="docs-search-list" role="listbox">
+          <li :for={i <- @search_items} data-text={i.text} role="option">
+            <a href={i.href} data-phx-link="redirect" data-phx-link-state="push">
+              <span>{i.title}</span><small>{i.crumb}</small>
+            </a>
+          </li>
+        </ul>
+        <div class="docs-search-empty" hidden>No results.</div>
+      </dialog>
       {render_slot(@inner_block)}
     </Layout.app_shell>
-
-    <dialog id="docs-search" class="docs-search" phx-hook="DocsSearch" aria-label="Search docs">
-      <input type="text" class="docs-search-input" placeholder="Search components, guides, blocks…" autocomplete="off" spellcheck="false" aria-label="Search docs" />
-      <ul class="docs-search-list" role="listbox">
-        <li :for={i <- @search_items} data-text={i.text} role="option">
-          <a href={i.href} data-phx-link="redirect" data-phx-link-state="push">
-            <span>{i.title}</span><small>{i.crumb}</small>
-          </a>
-        </li>
-      </ul>
-      <div class="docs-search-empty" hidden>No results.</div>
-    </dialog>
 
     <style>
       .demo-chrome { display: inline-flex; gap: 0.4rem; flex-wrap: wrap; }

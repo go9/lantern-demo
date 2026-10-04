@@ -27,13 +27,13 @@ defmodule LanternDemoWeb.Docs.Guides do
       <div class="docs-prose">
         <h2>1. Add the dependency</h2>
         <p>lantern_ui ships from Hex. Add it to <code>mix.exs</code> and run <code>mix deps.get</code>.</p>
-        <.code_block id="inst-deps" code={~S'{:lantern_ui, "~> 0.8"}'} />
+        <.snippet id="inst-deps" code={~S'{:lantern_ui, "~> 0.8"}'} />
         <h2>2. Load the assets</h2>
         <p>
           Serve <code>lantern_ui.css</code>, <code>lantern_ui_theme.css</code> and the hooks bundle (plus its
           <code>zag/</code> and <code>chunks/</code> directories — Zag widgets import them lazily) from <code>priv/static</code>.
         </p>
-        <.code_block id="inst-assets" code={~S'''
+        <.snippet id="inst-assets" code={~S'''
         plug Plug.Static, at: "/", from: {:lantern_ui, "priv/static"},
           only: ~w(lantern_ui.css lantern_ui_theme.css lantern_ui_hooks.js zag chunks)
 
@@ -47,7 +47,7 @@ defmodule LanternDemoWeb.Docs.Guides do
         '''} />
         <h2>3. Import components and mount the theme</h2>
         <p>Import what you use, and mount <code>&lt;.theme /&gt;</code> once in the layout to enable dark mode and presets.</p>
-        <.code_block id="inst-use" code={~S'''
+        <.snippet id="inst-use" code={~S'''
         use LanternUI                      # imports every component
         # or: import LanternUI.Components.Button
 
