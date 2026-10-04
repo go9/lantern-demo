@@ -408,6 +408,24 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert File.read!(hex_path) == conn.resp_body
   end
 
+  test "serves the on-demand Zag widget chunks (else no Zag widget initializes)" do
+    for path <- ["zag/tooltip.js", "zag/dialog.js", "zag/select.js"] do
+      conn = build_conn() |> get("/#{path}")
+      assert conn.status == 200, "missing /#{path}"
+      assert conn.resp_body != ""
+    end
+
+    chunks =
+      :lantern_ui
+      |> Application.app_dir("priv/static/chunks")
+      |> File.ls!()
+
+    assert chunks != []
+
+    conn = build_conn() |> get("/chunks/#{hd(chunks)}")
+    assert conn.status == 200
+  end
+
   defp mount_components do
     LanternDemoWeb.ComponentsLive.mount(
       %{},

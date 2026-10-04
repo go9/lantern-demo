@@ -78,6 +78,31 @@ defmodule LanternDemoWeb.WhatsNewLive do
         </section>
 
         <section class="docs-section">
+          <h2 class="docs-section-title">Widgets on Zag</h2>
+          <p class="docs-section-desc">
+            Tooltip, popover, switch, radio, the dialog family, menu/dropdown,
+            accordion, slider, tabs, and pagination now run on Zag state machines
+            (client mode by default, server-driven where it matters) — same
+            lantern markup and tokens, real keyboard and ARIA behavior.
+          </p>
+          <div class="docs-row">
+            <Button.button size="sm" navigate="/components/tooltip">Tooltip</Button.button>
+            <Button.button size="sm" navigate="/components/popover">Popover</Button.button>
+            <Button.button size="sm" navigate="/components/switch">Switch</Button.button>
+            <Button.button size="sm" navigate="/components/radio">Radio</Button.button>
+            <Button.button size="sm" navigate="/components/modal">Modal</Button.button>
+            <Button.button size="sm" navigate="/components/alert-dialog">Alert dialog</Button.button>
+            <Button.button size="sm" navigate="/components/sheet">Sheet</Button.button>
+            <Button.button size="sm" navigate="/components/menu">Menu and menubar</Button.button>
+            <Button.button size="sm" navigate="/components/dropdown">Dropdown menu</Button.button>
+            <Button.button size="sm" navigate="/components/accordion">Accordion</Button.button>
+            <Button.button size="sm" navigate="/components/slider">Slider</Button.button>
+            <Button.button size="sm" navigate="/components/tabs">Tabs</Button.button>
+            <Button.button size="sm" navigate="/components/pagination">Pagination</Button.button>
+          </div>
+        </section>
+
+        <section class="docs-section">
           <h2 class="docs-section-title">Flat lists — group bands are gone</h2>
           <p class="docs-section-desc">
             No collapsible group headers anywhere: one flat list, a status glyph on

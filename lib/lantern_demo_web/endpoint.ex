@@ -38,7 +38,10 @@ defmodule LanternDemoWeb.Endpoint do
     at: "/",
     from: {:lantern_ui, "priv/static"},
     gzip: false,
-    only: ~w(lantern_ui.css lantern_ui_theme.css lantern_ui_hooks.js)
+    # Zag widgets load their machines via relative dynamic import("./zag/*.js")
+    # (plus ./chunks/*) from lantern_ui_hooks.js — the whole static tree must
+    # be reachable or every Zag widget silently never initializes.
+    only: ~w(lantern_ui.css lantern_ui_theme.css lantern_ui_hooks.js zag chunks)
   )
 
   plug(Plug.Static,
