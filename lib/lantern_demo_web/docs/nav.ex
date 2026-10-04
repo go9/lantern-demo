@@ -34,6 +34,12 @@ defmodule LanternDemoWeb.Docs.Nav do
           title: "Theming",
           desc: "Tokens, the shadcn preset, density and dark mode.",
           kind: :live
+        },
+        %{
+          id: "ai",
+          title: "AI legibility",
+          desc: "llms.txt, agent rules, skills and a linter so coding agents build with lantern correctly.",
+          kind: :static
         }
       ]
     },

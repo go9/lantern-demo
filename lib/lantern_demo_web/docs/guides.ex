@@ -58,6 +58,47 @@ defmodule LanternDemoWeb.Docs.Guides do
     """
   end
 
+  def page(%{page_id: "ai"} = assigns) do
+    ~H"""
+    <Page.frame section={@section} page={@page}>
+      <div class="docs-prose">
+        <p>
+          lantern-ui ships everything a coding agent needs to build with it correctly — a model-readable
+          reference, a rules block for your <code>AGENTS.md</code>, installable skills, and a linter that
+          fails on the mistakes agents make most.
+        </p>
+        <h2>llms.txt</h2>
+        <p>
+          <code>llms.txt</code> is a one-screen rule list plus a one-line-per-component catalog;
+          <code>llms-full.txt</code> adds every attribute table. Regenerated from the component registry, so it
+          cannot drift.
+        </p>
+        <.snippet code={"mix lantern.llms           # regenerate (inside the lantern_ui package)\nmix lantern.llms --check   # fail CI when stale"} />
+        <h2>Rules agents follow</h2>
+        <ul>
+          <li>Build with lantern components in HEEx — never reach for React or a JS component library.</li>
+          <li>One flat list: a status column on each row, filter chips with counts. No group headers.</li>
+          <li>Never hand-roll a table or button where <code>table/1</code>, <code>data_table/1</code> or <code>button/1</code> exist.</li>
+          <li>Semantic tokens only — no palette classes, no arbitrary pixel values.</li>
+          <li>Title and actions live in the breadcrumb bar; no tabs as a default grouping mechanism.</li>
+          <li>Copy the recipe HEEx; never hand-roll rows, glyphs, rings or rails.</li>
+        </ul>
+        <h2>Install into your app</h2>
+        <p>Copies the skills and writes the rules block (with a fresh component catalog) into <code>AGENTS.md</code>.</p>
+        <.snippet code={"mix lantern_ui.install_skills\nmix lantern_ui.install_skills ../my-app --force"} />
+        <h2>Lint</h2>
+        <p>Fails on bypassed tokens, banned grouped-list markup, hand-rolled tables/buttons and unknown component or attribute names — with did-you-mean hints.</p>
+        <.snippet code={"mix lantern.lint\nmix lantern.lint --format json"} />
+        <h2>Skills</h2>
+        <p>
+          Four skills ship with the package: <code>lantern-ui-components</code>, <code>lantern-recipes</code>,
+          <code>lantern-migration</code> and <code>phoenix-page-design</code>.
+        </p>
+      </div>
+    </Page.frame>
+    """
+  end
+
   def page(%{page_id: "colors"} = assigns) do
     assigns = assign(assigns, :tokens, @tokens)
 

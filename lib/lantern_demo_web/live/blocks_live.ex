@@ -369,10 +369,10 @@ defmodule LanternDemoWeb.BlocksLive do
         </.nav_group>
       </:sidebar>
       <:sidebar_footer>
-        <.nav_link label="Documentation" icon="globe-alt" href="/whats-new" />
+        <.nav_link label="Documentation" icon="globe-alt" href="/docs/blocks" />
       </:sidebar_footer>
       <div id="review-bar" phx-hook="DemoChrome" data-shell="demo-app" class="blocks-reviewbar">
-        <.link navigate="/whats-new" class="blocks-reviewbar-back">← What's new</.link>
+        <.link navigate="/docs/blocks" class="blocks-reviewbar-back">← Blocks</.link>
         <span class="blocks-reviewbar-title">App shell block — the chrome on this page is the recipe</span>
         <span class="demo-chrome">
           <.button variant="outline" size="sm" type="button" data-part="theme-toggle">

@@ -205,3 +205,24 @@ dialog.docs-search::backdrop { background: rgb(0 0 0 / .45); }
 .docs-pre { margin: 0 0 1.25rem; padding: 1rem 1.15rem; background: #0f172a; color: #e2e8f0; border-radius: var(--lantern-radius-md);
   font-family: var(--lantern-font-mono); font-size: .8rem; line-height: 1.65; overflow: auto; }
 .docs-pre code { background: none; border: 0; padding: 0; font: inherit; color: inherit; }
+
+/* ---- /whats-new landing ---- */
+.wn { max-width: 1120px; padding: 1rem 0 4rem; }
+.wn-hero { padding: 3rem 0 3.25rem; max-width: 46rem; }
+.wn-eyebrow { font-size: .78rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--lantern-primary); margin: 0 0 .9rem; }
+.wn-title { font-family: var(--lantern-font-brand); font-size: clamp(2.25rem, 5vw, 3.5rem); line-height: 1.05; letter-spacing: -.03em; margin: 0 0 1.1rem; font-weight: 700; }
+.wn-sub { font-size: 1.1rem; line-height: 1.6; color: var(--lantern-fg-muted); margin: 0 0 1.75rem; }
+.wn-cta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.wn-cta-note { font-size: .85rem; color: var(--lantern-fg-subtle); }
+.wn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); gap: 1.75rem; }
+.wn-card { display: flex; flex-direction: column; background: var(--lantern-surface-raised); border: 1px solid var(--lantern-border);
+  border-radius: var(--lantern-radius-lg); overflow: hidden; }
+.wn-thumb { aspect-ratio: 16 / 10; background: var(--lantern-surface-sunken); border-bottom: 1px solid var(--lantern-border); overflow: hidden; }
+.wn-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+.wn-card-body { padding: 1.35rem 1.4rem 1.5rem; display: flex; flex-direction: column; gap: .6rem; flex: 1; }
+.wn-card-title { font-size: 1.15rem; font-weight: 650; letter-spacing: -.015em; margin: 0; }
+.wn-card-desc { font-size: .9rem; line-height: 1.55; color: var(--lantern-fg-muted); margin: 0; }
+.wn-links { display: flex; gap: 1.1rem; flex-wrap: wrap; margin-top: auto; padding-top: .6rem; }
+.wn-links a { font-size: .85rem; font-weight: 550; color: var(--lantern-primary); text-decoration: none; }
+.wn-links a:hover { text-decoration: underline; }
+@media (max-width: 720px) { .wn-grid { grid-template-columns: 1fr; } .wn-hero { padding: 1.5rem 0 2rem; } }

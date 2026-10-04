@@ -1,121 +1,92 @@
 defmodule LanternDemoWeb.WhatsNewLive do
   @moduledoc """
-  Review showcase landing: every change in this branch, each with a link to
-  the live page where the owner can see it.
+  The landing page for this release: a hero, then one card per change with a
+  thumbnail, a one-line description and a link or two. The single call to
+  action opens the demo app.
   """
   use Phoenix.LiveView
 
   alias LanternUI.Components.Button
 
+  @cards [
+    %{
+      id: "blocks",
+      title: "Page blocks",
+      desc: "Eight copy-paste pages — dashboard, list, detail, settings, form, login — each live and interactive.",
+      thumb: "/wn/blocks.jpg",
+      links: [{"Browse the blocks", "/docs/blocks"}, {"Dashboard", "/blocks/dashboard"}]
+    },
+    %{
+      id: "toast",
+      title: "Toast deck",
+      desc: "Stacked notifications with actions, sticky toasts, put_flash bridging and placement.",
+      thumb: "/wn/toast.jpg",
+      links: [{"Toasts", "/docs/feedback/toasts"}]
+    },
+    %{
+      id: "shadcn",
+      title: "shadcn preset",
+      desc: "One attribute — <Theme.theme preset=\"shadcn\" /> — restyles every component, light and dark.",
+      thumb: "/wn/shadcn.jpg",
+      links: [{"Theming", "/docs/getting-started/theming"}, {"Colors & tokens", "/docs/foundations/colors"}]
+    },
+    %{
+      id: "zag",
+      title: "Zag widgets",
+      desc: "Dialogs, menus, select, tooltip, tabs and more now run on Zag state machines with real keyboard and ARIA.",
+      thumb: "/wn/zag.jpg",
+      links: [{"Modal & alert dialog", "/docs/overlays/dialogs"}, {"Select", "/docs/forms/select"}]
+    },
+    %{
+      id: "lists",
+      title: "Flat lists",
+      desc: "Group bands are gone: one flat list with a status glyph on every row and filter chips with counts.",
+      thumb: "/wn/lists.jpg",
+      links: [{"Tables & lists", "/docs/data-display/tables-lists"}, {"List block", "/blocks/list"}]
+    },
+    %{
+      id: "ai",
+      title: "AI legibility package",
+      desc: "llms.txt, an AGENTS rules block, installable skills and a linter so coding agents build with lantern correctly.",
+      thumb: "/wn/ai.jpg",
+      links: [{"How it works", "/docs/getting-started/ai"}]
+    }
+  ]
+
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :page_title, "What's new — lantern-ui")}
+    {:ok, assign(socket, page_title: "What's new — lantern-ui", cards: @cards)}
   end
 
   def render(assigns) do
     ~H"""
     <LanternDemoWeb.DocsShell.shell current="getting-started/whats-new">
-      <article class="docs-body docs-body-wide">
-        <h1>What's new</h1>
-        <p>
-          lantern-ui, live and clickable — every change in this review branch, each
-          linked to the page that shows it. Flip the <strong>Default / shadcn</strong>
-          switch and <strong>Dark</strong> toggle in the top bar: they work on every
-          page below.
-        </p>
-
-        <section class="docs-section">
-          <h2 class="docs-section-title">Page blocks — 8 live pages</h2>
-          <p class="docs-section-desc">
-            Whole pages copied from the lantern-ui block recipes, with real
-            interactivity: the list filters and searches through the URL, dashboard
-            chips filter activity, the detail panel toggles, and the form validates.
+      <div class="wn">
+        <header class="wn-hero">
+          <p class="wn-eyebrow">What's new</p>
+          <h1 class="wn-title">Pages, not parts.</h1>
+          <p class="wn-sub">
+            This release ships whole page blocks, a toast deck, a shadcn-style preset, Zag-powered widgets,
+            flat lists and a package that makes lantern legible to coding agents.
           </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/blocks/app-shell">App shell</Button.button>
-            <Button.button size="sm" navigate="/blocks/dashboard">Dashboard</Button.button>
-            <Button.button size="sm" navigate="/blocks/list">List</Button.button>
-            <Button.button size="sm" navigate="/blocks/detail">Detail + inspector</Button.button>
-            <Button.button size="sm" navigate="/blocks/settings">Settings</Button.button>
-            <Button.button size="sm" navigate="/blocks/form">Form</Button.button>
-            <Button.button size="sm" navigate="/blocks/login">Login</Button.button>
-            <Button.button size="sm" navigate="/blocks/destructive">Destructive flow</Button.button>
+          <div class="wn-cta">
+            <Button.button variant="solid" size="lg" navigate="/app">Open the demo app</Button.button>
+            <span class="wn-cta-note">A fully working ticket tracker built only from lantern components.</span>
           </div>
-        </section>
+        </header>
 
-        <section class="docs-section">
-          <h2 class="docs-section-title">Toast deck</h2>
-          <p class="docs-section-desc">
-            Burst of 6 into a collapsed stack, Undo action, sticky until dismissed,
-            put_flash bridging, a placement picker, and the toast-then-re-render
-            regression check.
-          </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/docs/feedback/toasts">Toast page</Button.button>
-          </div>
-        </section>
-
-        <section class="docs-section">
-          <h2 class="docs-section-title">Theme switch: Default | shadcn, Light | Dark</h2>
-          <p class="docs-section-desc">
-            The top-bar switch drives <code>&lt;Theme.theme preset=&quot;shadcn&quot;&gt;</code>
-            on every page; the theming page keeps the full token editor.
-          </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/docs/getting-started/theming">Theming page</Button.button>
-          </div>
-        </section>
-
-        <section class="docs-section">
-          <h2 class="docs-section-title">Select: client + server-driven</h2>
-          <p class="docs-section-desc">
-            The default client mode (Zag owns the value, no round trip) next to a
-            controlled mode where the server value is truth — pick in the listbox or
-            drive it from the server buttons.
-          </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/docs/forms/select">Select page</Button.button>
-          </div>
-        </section>
-
-        <section class="docs-section">
-          <h2 class="docs-section-title">Widgets on Zag</h2>
-          <p class="docs-section-desc">
-            Tooltip, popover, switch, radio, the dialog family, menu/dropdown,
-            accordion, slider, tabs, and pagination now run on Zag state machines
-            (client mode by default, server-driven where it matters) — same
-            lantern markup and tokens, real keyboard and ARIA behavior.
-          </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/docs/overlays/popover-tooltip">Tooltip</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/popover-tooltip">Popover</Button.button>
-            <Button.button size="sm" navigate="/docs/forms/choice">Switch</Button.button>
-            <Button.button size="sm" navigate="/docs/forms/choice">Radio</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/dialogs">Modal</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/dialogs">Alert dialog</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/sheet">Sheet</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/menus">Menu and menubar</Button.button>
-            <Button.button size="sm" navigate="/docs/overlays/menus">Dropdown menu</Button.button>
-            <Button.button size="sm" navigate="/docs/data-display/accordion-timeline">Accordion</Button.button>
-            <Button.button size="sm" navigate="/docs/forms/slider">Slider</Button.button>
-            <Button.button size="sm" navigate="/docs/navigation/tabs">Tabs</Button.button>
-            <Button.button size="sm" navigate="/docs/navigation/breadcrumb-pagination">Pagination</Button.button>
-          </div>
-        </section>
-
-        <section class="docs-section">
-          <h2 class="docs-section-title">Flat lists — group bands are gone</h2>
-          <p class="docs-section-desc">
-            No collapsible group headers anywhere: one flat list, a status glyph on
-            every row, filter chips with counts above.
-          </p>
-          <div class="docs-row">
-            <Button.button size="sm" navigate="/docs/data-display/tables-lists">List row page</Button.button>
-            <Button.button size="sm" variant="outline" navigate="/blocks/list">
-              List block
-            </Button.button>
-          </div>
-        </section>
-      </article>
+        <div class="wn-grid">
+          <article :for={c <- @cards} id={"wn-#{c.id}"} class="wn-card">
+            <div class="wn-thumb"><img src={c.thumb} alt={"#{c.title} screenshot"} loading="lazy" /></div>
+            <div class="wn-card-body">
+              <h2 class="wn-card-title">{c.title}</h2>
+              <p class="wn-card-desc">{c.desc}</p>
+              <div class="wn-links">
+                <.link :for={{label, href} <- c.links} navigate={href}>{label} →</.link>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
     </LanternDemoWeb.DocsShell.shell>
     """
   end

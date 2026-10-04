@@ -487,14 +487,14 @@ defmodule LanternDemoWeb.DocsLive do
         )
 
       nil ->
-        raise Phoenix.Router.NoRouteError, conn: nil, router: LanternDemoWeb.Router
+        missing(socket)
     end
   end
 
   defp resolve(socket, %{"section" => sid}) do
     case Nav.section(sid) do
       nil ->
-        raise Phoenix.Router.NoRouteError, conn: nil, router: LanternDemoWeb.Router
+        missing(socket)
 
       s ->
         assign(socket,
@@ -510,12 +510,20 @@ defmodule LanternDemoWeb.DocsLive do
     assign(socket, view: :index, current: "docs", page_title: "Documentation — lantern-ui")
   end
 
+  defp missing(socket) do
+    assign(socket, view: :missing, current: "docs", page_title: "Not found — lantern-ui")
+  end
+
   def render(assigns) do
     assigns = assign(assigns, :titles, @member_titles)
 
     ~H"""
     <LanternDemoWeb.DocsShell.shell current={@current}>
       <Page.index_landing :if={@view == :index} />
+      <div :if={@view == :missing} class="docs-page">
+        <h1 class="docs-page-title">Page not found</h1>
+        <p class="docs-page-desc">That docs page doesn't exist. <.link navigate="/docs">Back to the docs index.</.link></p>
+      </div>
       <Page.section_landing :if={@view == :section} section={@section} />
       <%= if @view == :page do %>
         <%= if @page.kind == :static do %>
