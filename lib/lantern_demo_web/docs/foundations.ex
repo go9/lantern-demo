@@ -27,6 +27,20 @@ defmodule LanternDemoWeb.Docs.Foundations do
         </span>
       </div>
     </.demo_section>
+    <.demo_section
+      title="Every icon"
+      description="The whole curated set — `Icon.names/0` lists it. Names are validated at compile time."
+      code={~S'''
+      <.icon :for={name <- LanternUI.Components.Icon.names()} name={name} />
+      '''}
+    >
+      <div class="docs-icon-grid">
+        <span :for={n <- Enum.sort(Icon.names())} class="docs-icon-cell">
+          <Icon.icon name={n} />
+          <code>{n}</code>
+        </span>
+      </div>
+    </.demo_section>
     """
   end
 

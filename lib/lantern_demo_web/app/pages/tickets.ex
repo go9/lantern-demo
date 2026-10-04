@@ -138,7 +138,7 @@ defmodule LanternDemoWeb.App.Pages.Tickets do
     ~H"""
     <.alert color="danger" title="Couldn't load tickets">
       The tickets service timed out. This is a simulated failure — nothing is wrong with your data.
-      <.button size="sm" variant="outline" patch="/app/tickets">Try again</.button>
+      <div class="acme-alert-actions"><.button size="sm" variant="outline" patch="/app/tickets">Try again</.button></div>
     </.alert>
     """
   end

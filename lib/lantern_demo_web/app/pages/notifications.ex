@@ -80,7 +80,7 @@ defmodule LanternDemoWeb.App.Pages.Notifications do
     assigns = assign(assigns, :unread_n, Enum.count(assigns.notes, &(!&1.read)))
 
     ~H"""
-    <.card flush title="Inbox">
+    <.card flush title="Inbox" class="acme-notes">
       <:actions>
         <div class="acme-chips" role="group" aria-label="Filter notifications">
           <.button size="sm" variant={if @n_filter == "all", do: "solid", else: "outline"} phx-click="n_filter" phx-value-f="all" aria-pressed={to_string(@n_filter == "all")}>

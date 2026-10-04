@@ -64,3 +64,6 @@
 @media (max-width: 560px) { .acme-form-grid { grid-template-columns: 1fr; } }
 .acme-dialog-title, .acme-comment p, .acme-comment-head { font-size: var(--lantern-text); }
 .acme-auth, .acme-detail, .acme-narrow { font-size: var(--lantern-text); }
+
+.acme-alert-actions { margin-top: .6rem; }
+.acme-notes .lui-list-row:not(.acme-unread) .lui-list-row-name { font-weight: 450; color: var(--lantern-fg-muted); }

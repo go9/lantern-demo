@@ -41,7 +41,12 @@ defmodule LanternDemoWeb.App.Pages.Ticket do
 
   def actions(%{ticket: t} = assigns) do
     [
-      %{kind: :panel_toggle, label: "Toggle properties panel", event: "toggle_panel", open: assigns.panel_open},
+      %{
+        kind: :panel_toggle,
+        label: "Toggle properties panel",
+        event: "toggle_panel",
+        open: assigns.panel_open
+      },
       %{label: "Edit", navigate: "/app/tickets/#{t.id}/edit"},
       %{label: "Delete ticket", event: "delete_ticket", color: "danger"}
     ]

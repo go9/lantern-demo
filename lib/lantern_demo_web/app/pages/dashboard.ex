@@ -70,7 +70,7 @@ defmodule LanternDemoWeb.App.Pages.Dashboard do
     ~H"""
     <.alert color="danger" title="Couldn't load the dashboard">
       The activity service didn't answer. This is a simulated failure.
-      <.button size="sm" variant="outline" patch="/app">Try again</.button>
+      <div class="acme-alert-actions"><.button size="sm" variant="outline" patch="/app">Try again</.button></div>
     </.alert>
     """
   end

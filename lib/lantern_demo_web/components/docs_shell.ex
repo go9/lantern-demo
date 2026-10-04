@@ -113,7 +113,12 @@ defmodule LanternDemoWeb.DocsShell do
     <style>
       .demo-chrome { display: inline-flex; gap: 0.4rem; flex-wrap: wrap; }
       .lui-nav-item-soon { opacity: 0.5; pointer-events: none; }
-      @media (max-width: 720px) { .docs-search-btn span { display: none; } .docs-search-btn { min-width: 0; } }
+      .demo-chrome { flex-wrap: nowrap; }
+      @media (max-width: 720px) {
+        .docs-search-btn span, .docs-search-btn kbd { display: none; }
+        .docs-search-btn { min-width: 0; }
+        .demo-chrome [data-part="density-toggle"], .demo-chrome [data-part="preset-toggle"] { display: none; }
+      }
 
       /* Embedded DB-viewer demo: drop the standalone marketing chrome so it reads
          as a tool page inside the shell. */

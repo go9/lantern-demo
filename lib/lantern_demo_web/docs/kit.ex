@@ -313,9 +313,17 @@ defmodule LanternDemoWeb.Docs.Kit do
 
   defp attr_type(%{type: type, opts: opts}) do
     cond do
-      Keyword.has_key?(opts, :values) -> Enum.map_join(opts[:values], " | ", &to_string/1)
-      is_atom(type) -> type |> Atom.to_string() |> String.trim_leading("Elixir.")
-      true -> inspect(type)
+      Keyword.has_key?(opts, :values) and length(opts[:values]) > 10 ->
+        "one of #{length(opts[:values])} values"
+
+      Keyword.has_key?(opts, :values) ->
+        Enum.map_join(opts[:values], " | ", &to_string/1)
+
+      is_atom(type) ->
+        type |> Atom.to_string() |> String.trim_leading("Elixir.")
+
+      true ->
+        inspect(type)
     end
   end
 
