@@ -223,10 +223,77 @@ const DemoTheming = {
   },
 }
 
+
+// Cmd/Ctrl+K docs search: a native <dialog> with a client-side filtered list of
+// every docs page (+ merged-page members). Server-free so it works on every
+// LiveView that renders the docs shell.
+const DocsSearch = {
+  mounted() {
+    const dlg = this.el
+    this.input = dlg.querySelector("input")
+    this.items = [...dlg.querySelectorAll("li")]
+    this.empty = dlg.querySelector(".docs-search-empty")
+    this.sel = 0
+    this.open = () => {
+      if (dlg.open) return
+      this.input.value = ""
+      this.filter()
+      dlg.showModal()
+      this.input.focus()
+    }
+    this.onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && !e.defaultPrevented) {
+        e.preventDefault()
+        dlg.open ? dlg.close() : this.open()
+      }
+    }
+    this.onOpenClick = (e) => {
+      if (e.target.closest("[data-docs-search-open]")) this.open()
+    }
+    window.addEventListener("keydown", this.onKey)
+    document.addEventListener("click", this.onOpenClick)
+    this.input.addEventListener("input", () => this.filter())
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg || e.target.closest("a")) dlg.close()
+    })
+    this.input.addEventListener("keydown", (e) => {
+      const vis = this.visible()
+      if (e.key === "ArrowDown") { e.preventDefault(); this.move(vis, 1) }
+      else if (e.key === "ArrowUp") { e.preventDefault(); this.move(vis, -1) }
+      else if (e.key === "Enter") { e.preventDefault(); vis[this.sel]?.querySelector("a").click() }
+    })
+  },
+  destroyed() {
+    window.removeEventListener("keydown", this.onKey)
+    document.removeEventListener("click", this.onOpenClick)
+  },
+  visible() { return this.items.filter((li) => !li.hidden) },
+  filter() {
+    const terms = this.input.value.toLowerCase().split(/\s+/).filter(Boolean)
+    this.items.forEach((li) => {
+      li.hidden = !terms.every((t) => li.dataset.text.includes(t))
+    })
+    this.sel = 0
+    this.mark()
+    this.empty.hidden = this.visible().length > 0
+  },
+  move(vis, d) {
+    if (!vis.length) return
+    this.sel = (this.sel + d + vis.length) % vis.length
+    this.mark()
+    vis[this.sel].scrollIntoView({ block: "nearest" })
+  },
+  mark() {
+    const vis = this.visible()
+    this.items.forEach((li) => li.querySelector("a").removeAttribute("aria-selected"))
+    vis[this.sel]?.querySelector("a").setAttribute("aria-selected", "true")
+  },
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: { ...LanternUIHooks, LanternGrid, LiveCode, LanternS3Download, TurnstileWidget, DemoTheming, DemoChrome, DocsExample },
+  hooks: { ...LanternUIHooks, LanternGrid, LiveCode, LanternS3Download, TurnstileWidget, DemoTheming, DemoChrome, DocsExample, DocsSearch },
   uploaders: { S3 },
   params: { _csrf_token: csrfToken },
 })

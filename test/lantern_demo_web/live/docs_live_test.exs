@@ -1,4 +1,4 @@
-defmodule LanternDemoWeb.ComponentsLiveTest do
+defmodule LanternDemoWeb.DocsLiveTest do
   use ExUnit.Case, async: true
 
   import Phoenix.ConnTest
@@ -7,16 +7,15 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   @endpoint LanternDemoWeb.Endpoint
 
   @pages [
-    {"accordion", ["<h1>Accordion</h1>", ~s(id="faq"), "prevent_all_closed"]},
+    {"accordion", [~s(id="faq"), "prevent_all_closed"]},
     {"autocomplete",
-     ["<h1>Autocomplete</h1>", ~s(id="ac-catalog-ac"), ~s(data-server-search="search_catalog")]},
+     [~s(id="ac-catalog-ac"), ~s(data-server-search="search_catalog")]},
     {"alert-dialog",
-     ["<h1>Alert dialog</h1>", ~s(id="alert-dialog-demo"), ~s(role="alertdialog")]},
-    {"skeleton", ["<h1>Skeleton</h1>", ~s(aria-label="Loading profile"), "lui-skeleton"]},
-    {"stat", ["<h1>Stat cards</h1>", "lui-stat-grid", "pending-warehouse-confirmation-2026-07"]},
+     [~s(id="alert-dialog-demo"), ~s(role="alertdialog")]},
+    {"skeleton", [~s(aria-label="Loading profile"), "lui-skeleton"]},
+    {"stat", ["lui-stat-grid", "pending-warehouse-confirmation-2026-07"]},
     {"command",
      [
-       "<h1>Command palette</h1>",
        ~s(id="cmd-demo"),
        ~s(phx-hook="LanternCommand"),
        ~s(data-on-search="command_search"),
@@ -24,12 +23,11 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        ~s(data-part="separator")
      ]},
     {"dropdown",
-     ["<h1>Dropdown menu</h1>", ~s(lui-dropdown-custom), "Signed in as ada@example.com"]},
+     [~s(lui-dropdown-custom), "Signed in as ada@example.com"]},
     {"date-picker",
-     ["<h1>Date &amp; time pickers</h1>", ~s(class="lui-date-range"), "Release window"]},
+     [~s(class="lui-date-range"), "Release window"]},
     {"chat-kit",
      [
-       "<h1>Chat kit</h1>",
        ~s(id="chat-kit-demo"),
        ~s(phx-hook="LanternMessageScroller"),
        ~s(role="region"),
@@ -45,23 +43,21 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        "Toggle streaming",
        "Reset"
      ]},
-    {"popover", ["<h1>Popover</h1>", ~s(id="filters"), ~s(role="dialog"), "lui-popover"]},
+    {"popover", [~s(id="filters"), ~s(role="dialog"), "lui-popover"]},
     {"menu",
-     ["<h1>Menu and menubar</h1>", ~s(role="menu"), ~s(role="menubar"), ~s(role="separator")]},
+     [~s(role="menu"), ~s(role="menubar"), ~s(role="separator")]},
     {"slider",
-     ["<h1>Slider</h1>", ~s(role="slider"), ~s(data-part="input"), ~s(aria-valuetext="72%")]},
+     [~s(role="slider"), ~s(data-part="input"), ~s(aria-valuetext="72%")]},
     {"resource-list",
-     ["<h1>Resource list</h1>", ~s(data-layout="list"), ~s(data-layout="grid"), "Atlas"]},
+     [~s(data-layout="list"), ~s(data-layout="grid"), "Atlas"]},
     {"color-input",
      [
-       "<h1>Color input</h1>",
        ~s(type="color"),
        ~s(id="brand-color"),
        "Used in the project header"
      ]},
     {"progress-meter",
      [
-       "<h1>Progress and meter</h1>",
        ~s(role="progressbar"),
        ~s(role="meter"),
        ~s(data-state="indeterminate"),
@@ -69,7 +65,6 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
      ]},
     {"scroll-area",
      [
-       "<h1>Scroll area</h1>",
        ~s(data-orientation="vertical"),
        ~s(data-orientation="horizontal"),
        ~s(data-orientation="both"),
@@ -77,7 +72,6 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
      ]},
     {"list-row",
      [
-       "<h1>List row</h1>",
        "Flat list with status",
        ~s(data-lantern-list-nav),
        ~s(data-lantern-list-item),
@@ -89,17 +83,15 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
        "Visible progress ring"
      ]},
     {"inspector",
-     ["<h1>Inspector</h1>", ~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
+     [~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
     {"description-list",
      [
-       "<h1>Description list</h1>",
        "Dense (inspector rail)",
        "lui-inspector-list",
        "enventory_new"
      ]},
     {"state-glyph",
      [
-       "<h1>State glyph</h1>",
        ~s(data-kind="status"),
        ~s(data-kind="priority"),
        ~s(data-kind="run"),
@@ -108,7 +100,6 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
      ]},
     {"side-panel",
      [
-       "<h1>Side panel</h1>",
        ~s(id="tickets-panel"),
        ~s(phx-hook="LanternSidePanel"),
        ~s(data-lantern-persist="demo:side-filters")
@@ -117,7 +108,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
 
   test "new component pages render permanent examples and shared appearance controls" do
     for {slug, fragments} <- @pages do
-      html = build_conn() |> get("/components/#{slug}") |> html_response(200)
+      html = build_conn() |> get(doc(slug)) |> html_response(200)
 
       for fragment <- fragments,
           do: assert(html =~ fragment, "missing #{inspect(fragment)} on #{slug}")
@@ -129,41 +120,59 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     end
   end
 
-  test "component navigation includes every new page" do
-    html = build_conn() |> get("/components/accordion") |> html_response(200)
+  test "sidebar groups every page under a section, one entry per concept" do
+    html = build_conn() |> get("/docs/foundations/status") |> html_response(200)
 
-    assert html =~ ~s(href="/components/accordion")
-    assert html =~ ~s(href="/components/alert-dialog")
-    assert html =~ ~s(href="/components/skeleton")
-    assert html =~ ~s(href="/components/stat")
-    assert html =~ ~s(href="/components/command")
-    assert html =~ ~s(href="/components/chat-kit")
-    assert html =~ ~s(href="/components/popover")
-    assert html =~ ~s(href="/components/menu")
-    assert html =~ ~s(href="/components/slider")
-    assert html =~ ~s(href="/components/resource-list")
-    assert html =~ ~s(href="/components/color-input")
-    assert html =~ ~s(href="/components/progress-meter")
-    assert html =~ ~s(href="/components/scroll-area")
-    assert html =~ ~s(href="/components/list-row")
-    assert html =~ ~s(href="/components/inspector")
-    assert html =~ ~s(href="/components/description-list")
-    assert html =~ ~s(href="/components/state-glyph")
-    assert html =~ ~s(href="/components/side-panel")
-    refute html =~ ~s(href="/components/icon-button")
-    refute html =~ ~s(href="/components/group-band")
-    refute html =~ ~s(href="/components/segmented")
-    refute html =~ ~s(href="/components/progress-ring")
+    for s <- LanternDemoWeb.Docs.Nav.sections() do
+      assert html =~ (s.title |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string())
+      for p <- s.pages, do: assert(html =~ ~s(href="#{LanternDemoWeb.Docs.Nav.path(p, s)}"), "missing #{p.id}")
+    end
+
+    refute html =~ ~s(href="/components/)
+    assert html =~ ~s(data-part="nav-disclosure")
+    assert html =~ ~s(id="docs-search")
+  end
+
+  test "every docs page renders with the page template (title, description, props or guide)" do
+    for {s, p} <- LanternDemoWeb.Docs.Nav.all_pages(), p.kind in [:members, :static] do
+      html = build_conn() |> get(LanternDemoWeb.Docs.Nav.path(p, s)) |> html_response(200)
+      assert html =~ ~s(class="docs-page-title")
+      assert html =~ p.desc |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()
+    end
+  end
+
+  test "section landings and the docs index list their pages as cards" do
+    index = build_conn() |> get("/docs") |> html_response(200)
+    assert index =~ "docs-cards"
+
+    for s <- LanternDemoWeb.Docs.Nav.sections() do
+      html = build_conn() |> get("/docs/#{s.id}") |> html_response(200)
+      assert html =~ "docs-card"
+      for p <- s.pages, do: assert(html =~ p.title |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string())
+    end
+  end
+
+  test "legacy /components URLs redirect into the new IA" do
+    for {old, new} <- [
+          {"/components/toast", "/docs/feedback/toasts"},
+          {"/components/state-glyph", "/docs/foundations/status"},
+          {"/components/data-table", "/docs/data-display/data-table"},
+          {"/components/theming", "/docs/getting-started/theming"},
+          {"/components/nope", "/docs"}
+        ] do
+      conn = build_conn() |> get(old)
+      assert redirected_to(conn, 301) == new
+    end
   end
 
   test "0.8.2 consolidated attrs are documented on existing pages" do
-    button = build_conn() |> get("/components/button") |> html_response(200)
+    button = build_conn() |> get(doc("button")) |> html_response(200)
     assert button =~ "Icon buttons with label + kbd"
     assert button =~ ~s(aria-label="Filter")
     assert button =~ ~s(aria-label="Display")
     assert button =~ ~s(aria-label="Promote to ticket")
 
-    tabs = build_conn() |> get("/components/tabs") |> html_response(200)
+    tabs = build_conn() |> get(doc("tabs")) |> html_response(200)
     assert tabs =~ "Standalone pill control"
     assert tabs =~ ~s(id="dense-scope")
     assert tabs =~ ~s(role="radiogroup")
@@ -171,7 +180,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   end
 
   test "chat kit controls change the transcript and busy state" do
-    {:ok, view, html} = live(build_conn(), "/components/chat-kit")
+    {:ok, view, html} = live(build_conn(), doc("chat-kit"))
 
     assert html =~ ~s(aria-busy="false")
     assert anchor_count(html) == 1
@@ -207,7 +216,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
 
   # The palette filters nothing itself, so these handlers ARE the search.
   test "toast deck shows burst, actions, flash, placement, and re-render check" do
-    html = build_conn() |> get("/components/toast") |> html_response(200)
+    html = build_conn() |> get(doc("toast")) |> html_response(200)
 
     for fragment <- [
           "Burst of 6",
@@ -238,11 +247,11 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
           {"set_toast_placement", %{"placement" => "bottom-center"}}
         ] do
       assert {:noreply, _} =
-               LanternDemoWeb.ComponentsLive.handle_event(event, params, socket)
+               LanternDemoWeb.DocsLive.handle_event(event, params, socket)
     end
 
     {:noreply, placed} =
-      LanternDemoWeb.ComponentsLive.handle_event(
+      LanternDemoWeb.DocsLive.handle_event(
         "set_toast_placement",
         %{"placement" => "bottom-center"},
         socket
@@ -252,7 +261,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   end
 
   test "put_flash buttons bridge into the toast deck" do
-    {:ok, view, _html} = live(build_conn(), "/components/toast")
+    {:ok, view, _html} = live(build_conn(), doc("toast"))
 
     html = view |> element(~s(button[phx-click="demo_toast_flash"])) |> render_click()
     assert html =~ "Flash message via put_flash"
@@ -262,7 +271,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   end
 
   test "select page shows client and server-driven modes" do
-    html = build_conn() |> get("/components/select") |> html_response(200)
+    html = build_conn() |> get(doc("select")) |> html_response(200)
 
     for fragment <- [
           "Client mode (default)",
@@ -281,7 +290,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert socket.assigns.controlled_status == "active"
 
     {:noreply, picked} =
-      LanternDemoWeb.ComponentsLive.handle_event(
+      LanternDemoWeb.DocsLive.handle_event(
         "controlled_status_changed",
         %{"id" => "sel-controlled", "value" => ["archived"]},
         socket
@@ -290,7 +299,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert picked.assigns.controlled_status == "archived"
 
     {:noreply, driven} =
-      LanternDemoWeb.ComponentsLive.handle_event(
+      LanternDemoWeb.DocsLive.handle_event(
         "set_controlled_status",
         %{"value" => "active"},
         socket
@@ -306,14 +315,14 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
              ["Navigate", "Actions", "Danger zone"]
 
     {:noreply, navigate} =
-      LanternDemoWeb.ComponentsLive.handle_event("command_search", %{"query" => "go to"}, socket)
+      LanternDemoWeb.DocsLive.handle_event("command_search", %{"query" => "go to"}, socket)
 
     assert [{"Navigate", items}] = navigate.assigns.command_groups
     assert Enum.map(items, & &1.value) == ["goto-buttons", "goto-data-table", "goto-theming"]
     assert navigate.assigns.command_query == "go to"
 
     {:noreply, empty} =
-      LanternDemoWeb.ComponentsLive.handle_event("command_search", %{"query" => "zzz"}, socket)
+      LanternDemoWeb.DocsLive.handle_event("command_search", %{"query" => "zzz"}, socket)
 
     assert empty.assigns.command_groups == []
   end
@@ -322,7 +331,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     {:ok, socket} = mount_components()
 
     {:noreply, chosen} =
-      LanternDemoWeb.ComponentsLive.handle_event(
+      LanternDemoWeb.DocsLive.handle_event(
         "command_select",
         %{"value" => "new-ticket"},
         socket
@@ -332,7 +341,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
   end
 
   test "command palette places separators between groups" do
-    html = build_conn() |> get("/components/command") |> html_response(200)
+    html = build_conn() |> get(doc("command")) |> html_response(200)
 
     assert html =~ ~r/lui-command-group.*lui-command-separator.*lui-command-group/s
   end
@@ -341,12 +350,12 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     {:ok, socket} = mount_components()
 
     {:noreply, short} =
-      LanternDemoWeb.ComponentsLive.handle_event("search_catalog", %{"query" => "z"}, socket)
+      LanternDemoWeb.DocsLive.handle_event("search_catalog", %{"query" => "z"}, socket)
 
     assert short.assigns.catalog_options == []
 
     {:noreply, results} =
-      LanternDemoWeb.ComponentsLive.handle_event("search_catalog", %{"query" => "zel"}, socket)
+      LanternDemoWeb.DocsLive.handle_event("search_catalog", %{"query" => "zel"}, socket)
 
     assert results.assigns.catalog_options == [
              {"Nintendo 64",
@@ -358,7 +367,7 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
            ]
 
     {:noreply, none} =
-      LanternDemoWeb.ComponentsLive.handle_event(
+      LanternDemoWeb.DocsLive.handle_event(
         "search_catalog",
         %{"query" => "missing"},
         socket
@@ -371,21 +380,10 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     {:ok, socket} = mount_components()
 
     {:noreply, confirmed} =
-      LanternDemoWeb.ComponentsLive.handle_event("confirm_demo_revoke", %{}, socket)
+      LanternDemoWeb.DocsLive.handle_event("confirm_demo_revoke", %{}, socket)
 
     assert confirmed.assigns.alert_dialog_status ==
              "Demo key revoked — no real credential was changed."
-  end
-
-  test "unknown component slugs retain the existing button fallback" do
-    html = build_conn() |> get("/components/not-a-component") |> html_response(200)
-
-    assert html =~ "<h1>Button</h1>"
-
-    retired = build_conn() |> get("/components/group-band") |> html_response(200)
-
-    assert retired =~ "<h1>Button</h1>"
-    refute retired =~ "lui-group-band"
   end
 
   test "demo chrome persists the long sidebar position across navigation" do
@@ -426,8 +424,10 @@ defmodule LanternDemoWeb.ComponentsLiveTest do
     assert conn.status == 200
   end
 
+  defp doc(slug), do: LanternDemoWeb.Docs.Nav.legacy_path(slug)
+
   defp mount_components do
-    LanternDemoWeb.ComponentsLive.mount(
+    LanternDemoWeb.DocsLive.mount(
       %{},
       %{},
       %Phoenix.LiveView.Socket{assigns: %{__changed__: %{}}}

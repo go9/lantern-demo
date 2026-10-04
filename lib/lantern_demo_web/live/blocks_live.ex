@@ -93,7 +93,9 @@ defmodule LanternDemoWeb.BlocksLive do
 
     rows =
       tickets
-      |> then(fn rs -> if status, do: Enum.filter(rs, &(to_string(&1.status) == status)), else: rs end)
+      |> then(fn rs ->
+        if status, do: Enum.filter(rs, &(to_string(&1.status) == status)), else: rs
+      end)
       |> then(fn rs ->
         if query do
           q = String.downcase(query)
@@ -147,7 +149,9 @@ defmodule LanternDemoWeb.BlocksLive do
     {:noreply,
      socket
      |> assign(:confirm_open, false)
-     |> LanternUI.send_toast(:warning, "Nothing was harmed — this is a demo.", title: "Deleted (demo)")}
+     |> LanternUI.send_toast(:warning, "Nothing was harmed — this is a demo.",
+       title: "Deleted (demo)"
+     )}
   end
 
   # ── settings saves ──
@@ -222,6 +226,7 @@ defmodule LanternDemoWeb.BlocksLive do
       status -> Enum.filter(assigns.activity, &(to_string(&1.status) == status))
     end
   end
+
   defp assign_fixtures(socket) do
     assign(socket,
       shell_crumbs: [
@@ -408,7 +413,7 @@ defmodule LanternDemoWeb.BlocksLive do
 
   def render(assigns) do
     ~H"""
-    <DocsShell.shell current={"blocks-#{@block}"}>
+    <DocsShell.shell current={"blocks/#{@block}"}>
       <.toast_group id="blocks-toasts" flash={@flash} />
       <article :if={@block == "dashboard"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>

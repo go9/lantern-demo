@@ -1,6 +1,6 @@
 defmodule LanternDemoWeb.AppShellPreviewLive do
   @moduledoc """
-  A standalone, self-contained `app_shell` rendered for the `/components/app-shell`
+  A standalone, self-contained `app_shell` rendered for the `/docs/layout/app-shell`
   preview iframe. `app_shell` is `position: fixed` (top bar + sidebar), so it can't
   be nested inside the docs' own shell — an iframe scopes the fixed positioning to
   its own viewport, giving a faithful, fully interactive preview (the collapse

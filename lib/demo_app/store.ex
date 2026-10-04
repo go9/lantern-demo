@@ -75,7 +75,9 @@ defmodule DemoApp.Store do
         [ticket] ->
           updated =
             ticket
-            |> Map.merge(Map.take(attrs, [:title, :body, :status, :priority, :tag, :assignee, :project_id]))
+            |> Map.merge(
+              Map.take(attrs, [:title, :body, :status, :priority, :tag, :assignee, :project_id])
+            )
             |> touch(Map.get(attrs, :note, "Ticket updated"))
 
           {updated, %{s | tickets: [updated | rest]}}
@@ -158,7 +160,9 @@ defmodule DemoApp.Store do
 
   def update_member_role(email, role) do
     Agent.update(__MODULE__, fn s ->
-      members = Enum.map(s.members, fn m -> if m.email == email, do: %{m | role: role}, else: m end)
+      members =
+        Enum.map(s.members, fn m -> if m.email == email, do: %{m | role: role}, else: m end)
+
       %{s | members: members}
     end)
   end
@@ -248,8 +252,18 @@ defmodule DemoApp.Store do
         project_id: 1,
         date: ~D[2026-10-02],
         comments: [
-          %{author: "Grace Hopper", initials: "GH", body: "Ring renders in the list row now — check the hub next.", at: "3h ago"},
-          %{author: "Ada Lovelace", initials: "AL", body: "Hub updated. 7/19 visible at a glance.", at: "1h ago"}
+          %{
+            author: "Grace Hopper",
+            initials: "GH",
+            body: "Ring renders in the list row now — check the hub next.",
+            at: "3h ago"
+          },
+          %{
+            author: "Ada Lovelace",
+            initials: "AL",
+            body: "Hub updated. 7/19 visible at a glance.",
+            at: "1h ago"
+          }
         ],
         activity: [
           %{text: "Grace Hopper commented", at: "3h ago"},
@@ -282,7 +296,14 @@ defmodule DemoApp.Store do
         assignee: "grace@acme.test",
         project_id: 2,
         date: ~D[2026-09-28],
-        comments: [%{author: "Ada Lovelace", initials: "AL", body: "Shipped with the new stat grid.", at: "4d ago"}],
+        comments: [
+          %{
+            author: "Ada Lovelace",
+            initials: "AL",
+            body: "Shipped with the new stat grid.",
+            at: "4d ago"
+          }
+        ],
         activity: [
           %{text: "Status changed to Done", at: "4d ago"},
           %{text: "Ticket created", at: "1w ago"}
@@ -341,7 +362,14 @@ defmodule DemoApp.Store do
         assignee: "ada@acme.test",
         project_id: 3,
         date: ~D[2026-09-23],
-        comments: [%{author: "Alan Turing", initials: "AT", body: "Reproduced on iOS 26 — looks cookie-related.", at: "1d ago"}],
+        comments: [
+          %{
+            author: "Alan Turing",
+            initials: "AT",
+            body: "Reproduced on iOS 26 — looks cookie-related.",
+            at: "1d ago"
+          }
+        ],
         activity: [
           %{text: "Priority raised to urgent", at: "1d ago"},
           %{text: "Ticket created", at: "2w ago"}
@@ -392,18 +420,87 @@ defmodule DemoApp.Store do
     ]
 
     projects = [
-      %{id: 1, name: "lantern-ui", summary: "Dense-app primitives for Linear-shaped pages", completed: 7, scope: 19, status: :active},
-      %{id: 2, name: "Acme hub", summary: "Dashboard, inbox, and review flows", completed: 12, scope: 20, status: :active},
-      %{id: 3, name: "Auth & billing", summary: "SSO, invites, and receipts", completed: 3, scope: 11, status: :paused}
+      %{
+        id: 1,
+        name: "lantern-ui",
+        summary: "Dense-app primitives for Linear-shaped pages",
+        completed: 7,
+        scope: 19,
+        status: :active
+      },
+      %{
+        id: 2,
+        name: "Acme hub",
+        summary: "Dashboard, inbox, and review flows",
+        completed: 12,
+        scope: 20,
+        status: :active
+      },
+      %{
+        id: 3,
+        name: "Auth & billing",
+        summary: "SSO, invites, and receipts",
+        completed: 3,
+        scope: 11,
+        status: :paused
+      }
     ]
 
     notifications = [
-      %{id: 1, kind: "mention", title: "Grace mentioned you in #241", body: "“Ring renders in the list row now — check the hub next.”", read: false, at: "3h ago", link: "/app/tickets/241"},
-      %{id: 2, kind: "review", title: "Review requested on #235", body: "Alan asked for a review of the SSO fix.", read: false, at: "5h ago", link: "/app/tickets/235"},
-      %{id: 3, kind: "status", title: "#239 moved to Done", body: "Hub dashboard grouping is finished.", read: false, at: "1d ago", link: "/app/tickets/239"},
-      %{id: 4, kind: "invite", title: "Barbara joined Acme", body: "Grace invited barbara@acme.test as viewer.", read: true, at: "2d ago", link: "/app/team"},
-      %{id: 5, kind: "mention", title: "Alan mentioned you in #235", body: "“Reproduced on iOS 26 — looks cookie-related.”", read: true, at: "3d ago", link: "/app/tickets/235"},
-      %{id: 6, kind: "system", title: "Weekly digest is live", body: "Monday summaries are on for every owner.", read: true, at: "1w ago", link: "/app/settings"}
+      %{
+        id: 1,
+        kind: "mention",
+        title: "Grace mentioned you in #241",
+        body: "“Ring renders in the list row now — check the hub next.”",
+        read: false,
+        at: "3h ago",
+        link: "/app/tickets/241"
+      },
+      %{
+        id: 2,
+        kind: "review",
+        title: "Review requested on #235",
+        body: "Alan asked for a review of the SSO fix.",
+        read: false,
+        at: "5h ago",
+        link: "/app/tickets/235"
+      },
+      %{
+        id: 3,
+        kind: "status",
+        title: "#239 moved to Done",
+        body: "Hub dashboard grouping is finished.",
+        read: false,
+        at: "1d ago",
+        link: "/app/tickets/239"
+      },
+      %{
+        id: 4,
+        kind: "invite",
+        title: "Barbara joined Acme",
+        body: "Grace invited barbara@acme.test as viewer.",
+        read: true,
+        at: "2d ago",
+        link: "/app/team"
+      },
+      %{
+        id: 5,
+        kind: "mention",
+        title: "Alan mentioned you in #235",
+        body: "“Reproduced on iOS 26 — looks cookie-related.”",
+        read: true,
+        at: "3d ago",
+        link: "/app/tickets/235"
+      },
+      %{
+        id: 6,
+        kind: "system",
+        title: "Weekly digest is live",
+        body: "Monday summaries are on for every owner.",
+        read: true,
+        at: "1w ago",
+        link: "/app/settings"
+      }
     ]
 
     %{

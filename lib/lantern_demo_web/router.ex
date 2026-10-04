@@ -21,10 +21,13 @@ defmodule LanternDemoWeb.Router do
     live("/livecode", LiveCodeDemoLive, :index)
     live("/whats-new", WhatsNewLive)
     live("/blocks/:name", BlocksLive)
-    live("/components", ComponentsLive, :index)
     live("/preview/app-shell", AppShellPreviewLive)
-    live("/components/data-table", DataTableDemo)
-    live("/components/theming", ThemingLive)
-    live("/components/:slug", ComponentsLive, :show)
+    live("/docs/data-display/data-table", DataTableDemo)
+    live("/docs/getting-started/theming", ThemingLive)
+    live("/docs", DocsLive, :index)
+    live("/docs/:section", DocsLive, :section)
+    live("/docs/:section/:page", DocsLive, :page)
+    get("/components", LegacyRedirect, [])
+    get("/components/:slug", LegacyRedirect, [])
   end
 end

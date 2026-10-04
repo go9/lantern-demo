@@ -223,7 +223,7 @@ defmodule LanternDemoWeb.DemoLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="db" theme={@theme}>
+    <LanternDemoWeb.DocsShell.shell current="tools/db" theme={@theme}>
       <div class="demo-shell" data-demo-theme={@theme}>
       <section class="demo-hero">
         <p class="demo-eyebrow">Lantern</p>

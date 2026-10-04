@@ -53,10 +53,10 @@ defmodule LanternDemoWeb.BlocksLiveTest do
           "/blocks/form",
           "/blocks/login",
           "/blocks/destructive",
-          "/components/toast",
-          "/components/theming",
-          "/components/select",
-          "/components/list-row"
+          "/docs/feedback/toasts",
+          "/docs/getting-started/theming",
+          "/docs/forms/select",
+          "/docs/data-display/tables-lists"
         ] do
       assert html =~ path, "missing link #{path} on whats-new"
     end

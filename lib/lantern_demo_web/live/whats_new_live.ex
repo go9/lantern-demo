@@ -13,7 +13,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
 
   def render(assigns) do
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="whats-new">
+    <LanternDemoWeb.DocsShell.shell current="getting-started/whats-new">
       <article class="docs-body docs-body-wide">
         <h1>What's new</h1>
         <p>
@@ -50,7 +50,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
             regression check.
           </p>
           <div class="docs-row">
-            <Button.button size="sm" navigate="/components/toast">Toast page</Button.button>
+            <Button.button size="sm" navigate="/docs/feedback/toasts">Toast page</Button.button>
           </div>
         </section>
 
@@ -61,7 +61,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
             on every page; the theming page keeps the full token editor.
           </p>
           <div class="docs-row">
-            <Button.button size="sm" navigate="/components/theming">Theming page</Button.button>
+            <Button.button size="sm" navigate="/docs/getting-started/theming">Theming page</Button.button>
           </div>
         </section>
 
@@ -73,7 +73,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
             drive it from the server buttons.
           </p>
           <div class="docs-row">
-            <Button.button size="sm" navigate="/components/select">Select page</Button.button>
+            <Button.button size="sm" navigate="/docs/forms/select">Select page</Button.button>
           </div>
         </section>
 
@@ -86,19 +86,19 @@ defmodule LanternDemoWeb.WhatsNewLive do
             lantern markup and tokens, real keyboard and ARIA behavior.
           </p>
           <div class="docs-row">
-            <Button.button size="sm" navigate="/components/tooltip">Tooltip</Button.button>
-            <Button.button size="sm" navigate="/components/popover">Popover</Button.button>
-            <Button.button size="sm" navigate="/components/switch">Switch</Button.button>
-            <Button.button size="sm" navigate="/components/radio">Radio</Button.button>
-            <Button.button size="sm" navigate="/components/modal">Modal</Button.button>
-            <Button.button size="sm" navigate="/components/alert-dialog">Alert dialog</Button.button>
-            <Button.button size="sm" navigate="/components/sheet">Sheet</Button.button>
-            <Button.button size="sm" navigate="/components/menu">Menu and menubar</Button.button>
-            <Button.button size="sm" navigate="/components/dropdown">Dropdown menu</Button.button>
-            <Button.button size="sm" navigate="/components/accordion">Accordion</Button.button>
-            <Button.button size="sm" navigate="/components/slider">Slider</Button.button>
-            <Button.button size="sm" navigate="/components/tabs">Tabs</Button.button>
-            <Button.button size="sm" navigate="/components/pagination">Pagination</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/popover-tooltip">Tooltip</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/popover-tooltip">Popover</Button.button>
+            <Button.button size="sm" navigate="/docs/forms/choice">Switch</Button.button>
+            <Button.button size="sm" navigate="/docs/forms/choice">Radio</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/dialogs">Modal</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/dialogs">Alert dialog</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/sheet">Sheet</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/menus">Menu and menubar</Button.button>
+            <Button.button size="sm" navigate="/docs/overlays/menus">Dropdown menu</Button.button>
+            <Button.button size="sm" navigate="/docs/data-display/accordion-timeline">Accordion</Button.button>
+            <Button.button size="sm" navigate="/docs/forms/slider">Slider</Button.button>
+            <Button.button size="sm" navigate="/docs/navigation/tabs">Tabs</Button.button>
+            <Button.button size="sm" navigate="/docs/navigation/breadcrumb-pagination">Pagination</Button.button>
           </div>
         </section>
 
@@ -109,7 +109,7 @@ defmodule LanternDemoWeb.WhatsNewLive do
             every row, filter chips with counts above.
           </p>
           <div class="docs-row">
-            <Button.button size="sm" navigate="/components/list-row">List row page</Button.button>
+            <Button.button size="sm" navigate="/docs/data-display/tables-lists">List row page</Button.button>
             <Button.button size="sm" variant="outline" navigate="/blocks/list">
               List block
             </Button.button>
