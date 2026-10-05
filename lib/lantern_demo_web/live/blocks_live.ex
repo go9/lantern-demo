@@ -1,6 +1,6 @@
 defmodule LanternDemoWeb.BlocksLive do
   @moduledoc """
-  Review showcase: the eight lantern-ui page blocks, live.
+  The eight lantern-ui page blocks, live.
 
   HEEx is copied from `test/support/blocks/*.html.heex` at the pinned
   lantern-ui ref (see `docs/recipes.md` there), with the fixture assigns
@@ -372,9 +372,9 @@ defmodule LanternDemoWeb.BlocksLive do
       <:sidebar_footer>
         <.nav_link label="Documentation" icon="globe-alt" href="/docs/blocks" />
       </:sidebar_footer>
-      <div id="review-bar" phx-hook="DemoChrome" data-shell="demo-app" class="blocks-reviewbar">
-        <.link navigate="/docs/blocks" class="blocks-reviewbar-back">← Blocks</.link>
-        <span class="blocks-reviewbar-title">App shell block — the chrome on this page is the recipe</span>
+      <div id="blocks-bar" phx-hook="DemoChrome" data-shell="demo-app" class="blocks-topbar">
+        <.link navigate="/docs/blocks" class="blocks-topbar-back">← Blocks</.link>
+        <span class="blocks-topbar-title">App shell block — the chrome on this page is the recipe</span>
         <span class="demo-chrome">
           <.button variant="outline" size="sm" type="button" data-part="theme-toggle">
             <span data-part="theme-label">Dark</span>
@@ -400,14 +400,14 @@ defmodule LanternDemoWeb.BlocksLive do
       </.card>
     </.app_shell>
     <style>
-      .blocks-reviewbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+      .blocks-topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
         gap: 0.75rem; margin: 0 -1.5rem 1.25rem; padding: 0.5rem 1.5rem;
         background: var(--lantern-surface); border-bottom: 1px solid var(--lantern-border); }
-      .blocks-reviewbar-back { font-size: 0.82rem; font-weight: 600; text-decoration: none;
+      .blocks-topbar-back { font-size: 0.82rem; font-weight: 600; text-decoration: none;
         color: var(--lantern-fg-muted); }
-      .blocks-reviewbar-back:hover { color: var(--lantern-fg); }
-      .blocks-reviewbar-title { font-size: 0.82rem; color: var(--lantern-fg-muted); flex: 1; }
-      .blocks-reviewbar .demo-chrome { display: inline-flex; gap: 0.4rem; }
+      .blocks-topbar-back:hover { color: var(--lantern-fg); }
+      .blocks-topbar-title { font-size: 0.82rem; color: var(--lantern-fg-muted); flex: 1; }
+      .blocks-topbar .demo-chrome { display: inline-flex; gap: 0.4rem; }
     </style>
     """
   end

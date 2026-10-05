@@ -25,12 +25,10 @@ defmodule LanternDemo.MixProject do
   defp deps do
     [
       {:lantern, github: "go9/lantern"},
-      # Review showcase (branch-only): lantern_ui from git at origin/main,
-      # which now carries the toast deck, Theme preset="shadcn", the Zag
-      # select (client + controlled modes), stack/1, and test/support/blocks
-      # page recipes. Never merge this to main (auto-deploys + Hex pin).
+      # lantern_ui from git at a pinned main sha (Zag widgets, page blocks, shadcn
+      # preset, toast deck, row links). Repin when lantern-ui releases.
       {:lantern_ui,
-       github: "go9/lantern-ui", ref: "94c0191af1e65fdd4a9d5ef8ba567ce039d06b6e", override: true},
+       github: "go9/lantern-ui", ref: "ed14a0092ddfa7633e5056a08a2231b9409518b0", override: true},
       {:lantern_s3, github: "go9/lantern-s3"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
