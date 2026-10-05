@@ -129,7 +129,7 @@ defmodule LanternDemoWeb.LiveCodeDemoLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="livecode" theme="system">
+    <LanternDemoWeb.DocsShell.shell current="tools/livecode" theme="system">
       <div class="demo-shell">
         <section class="demo-hero">
           <p class="demo-eyebrow">LiveCode</p>

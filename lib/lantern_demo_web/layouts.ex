@@ -11,7 +11,7 @@ defmodule LanternDemoWeb.Layouts do
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="csrf-token" content={get_csrf_token()} />
-        <title>Lantern — open-source LiveView tools</title>
+        <.live_title default="Lantern — open-source LiveView tools">{assigns[:page_title]}</.live_title>
         <meta name="description" content="Lantern is a family of open-source Phoenix LiveView tools: a Postgres table editor, an S3 file manager, and an in-browser code editor. Try them live." />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -21,6 +21,8 @@ defmodule LanternDemoWeb.Layouts do
         <link rel="stylesheet" href="/lantern_ui_theme.css" />
         <link rel="stylesheet" href="/lantern_ui.css" />
         <link rel="stylesheet" href="/lantern_s3.css" />
+        <link rel="stylesheet" href="/docs.css" />
+        <link rel="stylesheet" href="/acme.css" />
         <style>
           /* Feed lantern-ui the flicker type system: Space Grotesk brand/headings,
              Inter body, JetBrains Mono for code. */

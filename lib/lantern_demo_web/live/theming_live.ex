@@ -316,7 +316,7 @@ defmodule LanternDemoWeb.ThemingLive do
     assigns = assign(assigns, :resolved_themes, resolved_all(assigns))
 
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="theming" theme="system" density="compact">
+    <LanternDemoWeb.DocsShell.shell current="getting-started/theming" theme="system" density="compact">
       <div id="theming-root" phx-hook="DemoTheming">
         <article class="docs-body docs-body-wide">
           <h1>Theming</h1>

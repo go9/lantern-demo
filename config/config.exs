@@ -11,6 +11,12 @@ config :lantern_demo, LanternDemoWeb.Endpoint,
   live_view: [signing_salt: "lantern_demo_salt"],
   render_errors: [formats: [html: LanternDemoWeb.ErrorHTML], layout: false]
 
+# Dev only: lets a tunneled/proxied origin (bb connect, ngrok) open the LiveView
+# socket. Production keeps Phoenix's default origin check.
+if config_env() == :dev do
+  config :lantern_demo, LanternDemoWeb.Endpoint, check_origin: false
+end
+
 config :phoenix, :json_library, Jason
 
 # Cloudflare Turnstile — default to always-pass test keys for local dev.

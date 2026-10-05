@@ -25,9 +25,10 @@ defmodule LanternDemo.MixProject do
   defp deps do
     [
       {:lantern, github: "go9/lantern"},
-      # lantern and lantern_s3 still pin lantern_ui from git. Mix requires the
-      # hex pin to override those so this app stays on the published 0.8.3.
-      {:lantern_ui, "~> 0.8.3", override: true},
+      # lantern_ui from git at a pinned main sha (Zag widgets, page blocks, shadcn
+      # preset, toast deck, row links). Repin when lantern-ui releases.
+      {:lantern_ui,
+       github: "go9/lantern-ui", ref: "ed14a0092ddfa7633e5056a08a2231b9409518b0", override: true},
       {:lantern_s3, github: "go9/lantern-s3"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},

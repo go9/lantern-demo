@@ -89,7 +89,9 @@ defmodule LanternDemo.DemoDB do
           :ok
 
         other ->
-          Logger.warning("[DemoDB] unexpected response dropping branch #{sandbox_id}: #{inspect(other)}")
+          Logger.warning(
+            "[DemoDB] unexpected response dropping branch #{sandbox_id}: #{inspect(other)}"
+          )
       end
     end
 
@@ -103,7 +105,11 @@ defmodule LanternDemo.DemoDB do
       case Postgrex.start_link(Lantern.Source.to_postgrex_opts(maintenance_source)) do
         {:ok, conn} ->
           try do
-            Postgrex.query!(conn, "DROP DATABASE IF EXISTS #{Lantern.SQL.quote_ident(db_name)}", [])
+            Postgrex.query!(
+              conn,
+              "DROP DATABASE IF EXISTS #{Lantern.SQL.quote_ident(db_name)}",
+              []
+            )
           rescue
             _ -> :ok
           after
@@ -200,7 +206,8 @@ defmodule LanternDemo.DemoDB do
            auth: {:bearer, api_key},
            connect_options: [transport_opts: ssl_opts()]
          ) do
-      {:ok, %{status: 200, body: %{"branch" => %{"status" => "ready", "connection_string" => cs}}}}
+      {:ok,
+       %{status: 200, body: %{"branch" => %{"status" => "ready", "connection_string" => cs}}}}
       when is_binary(cs) ->
         {:ok, cs, branch_id}
 

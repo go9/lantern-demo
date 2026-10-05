@@ -120,7 +120,7 @@ defmodule LanternDemoWeb.DataTableDemo do
 
   def render(assigns) do
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="data-table" theme="system" density="compact">
+    <LanternDemoWeb.DocsShell.shell current="data-display/data-table" theme="system" density="compact">
       <article class="docs-body docs-body-wide">
         <h1>Data table</h1>
         <p>
@@ -134,7 +134,7 @@ defmodule LanternDemoWeb.DataTableDemo do
           id="orders"
           rows={@rows}
           meta={@meta}
-          path="/components/data-table"
+          path="/docs/data-display/data-table"
           selected_ids={@selected}
           search_field={:q}
           search_placeholder="Search buyer or reference…"

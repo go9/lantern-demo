@@ -297,7 +297,7 @@ defmodule LanternDemoWeb.S3DemoLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <LanternDemoWeb.DocsShell.shell current="s3" theme={@theme}>
+    <LanternDemoWeb.DocsShell.shell current="tools/s3" theme={@theme}>
       <div class="demo-shell" data-demo-theme={@theme}>
         <section class="demo-hero">
           <p class="demo-eyebrow">Lantern S3</p>

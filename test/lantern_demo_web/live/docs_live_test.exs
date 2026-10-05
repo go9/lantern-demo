@@ -1,0 +1,465 @@
+defmodule LanternDemoWeb.DocsLiveTest do
+  use ExUnit.Case, async: true
+
+  import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
+
+  @endpoint LanternDemoWeb.Endpoint
+
+  @pages [
+    {"accordion", [~s(id="faq"), "prevent_all_closed"]},
+    {"autocomplete",
+     [~s(id="ac-catalog-ac"), ~s(data-server-search="search_catalog")]},
+    {"alert-dialog",
+     [~s(id="alert-dialog-demo"), ~s(role="alertdialog")]},
+    {"skeleton", [~s(aria-label="Loading profile"), "lui-skeleton"]},
+    {"stat", ["lui-stat-grid", "pending-warehouse-confirmation-2026-07"]},
+    {"command",
+     [
+       ~s(id="cmd-demo"),
+       ~s(phx-hook="LanternCommand"),
+       ~s(data-on-search="command_search"),
+       ~s(data-value="goto-theming"),
+       ~s(data-part="separator")
+     ]},
+    {"dropdown",
+     [~s(lui-dropdown-custom), "Signed in as ada@example.com"]},
+    {"date-picker",
+     [~s(class="lui-date-range"), "Release window"]},
+    {"chat-kit",
+     [
+       ~s(id="chat-kit-demo"),
+       ~s(phx-hook="LanternMessageScroller"),
+       ~s(role="region"),
+       ~s(aria-label="Chat kit conversation"),
+       ~s(role="log"),
+       ~s(data-align="start"),
+       ~s(data-align="end"),
+       ~s(data-tone="surface"),
+       ~s(data-tone="primary"),
+       ~s(data-part="avatar"),
+       "AL",
+       "Append reply",
+       "Toggle streaming",
+       "Reset"
+     ]},
+    {"popover", [~s(id="filters"), ~s(role="dialog"), "lui-popover"]},
+    {"menu",
+     [~s(role="menu"), ~s(role="menubar"), ~s(role="separator")]},
+    {"slider",
+     [~s(role="slider"), ~s(data-part="input"), ~s(aria-valuetext="72%")]},
+    {"resource-list",
+     [~s(data-layout="list"), ~s(data-layout="grid"), "Atlas"]},
+    {"color-input",
+     [
+       ~s(type="color"),
+       ~s(id="brand-color"),
+       "Used in the project header"
+     ]},
+    {"progress-meter",
+     [
+       ~s(role="progressbar"),
+       ~s(role="meter"),
+       ~s(data-state="indeterminate"),
+       "7 / 19"
+     ]},
+    {"scroll-area",
+     [
+       ~s(data-orientation="vertical"),
+       ~s(data-orientation="horizontal"),
+       ~s(data-orientation="both"),
+       ~s(tabindex="0")
+     ]},
+    {"list-row",
+     [
+       "Flat list with status",
+       ~s(data-lantern-list-nav),
+       ~s(data-lantern-list-item),
+       "All (3)",
+       "In progress (1)",
+       "To do (1)",
+       "Done (1)",
+       "#241",
+       "Visible progress ring"
+     ]},
+    {"inspector",
+     [~s(aria-label="Ticket"), "lui-inspector", "lui-property-row"]},
+    {"description-list",
+     [
+       "Dense (inspector rail)",
+       "lui-inspector-list",
+       "enventory_new"
+     ]},
+    {"state-glyph",
+     [
+       ~s(data-kind="status"),
+       ~s(data-kind="priority"),
+       ~s(data-kind="run"),
+       ~s(data-kind="sync"),
+       ~s(data-kind="source")
+     ]},
+    {"side-panel",
+     [
+       ~s(id="tickets-panel"),
+       ~s(phx-hook="LanternSidePanel"),
+       ~s(data-lantern-persist="demo:side-filters")
+     ]}
+  ]
+
+  test "new component pages render permanent examples and shared appearance controls" do
+    for {slug, fragments} <- @pages do
+      html = build_conn() |> get(doc(slug)) |> html_response(200)
+
+      for fragment <- fragments,
+          do: assert(html =~ fragment, "missing #{inspect(fragment)} on #{slug}")
+
+      assert html =~ ~s(data-part="theme-toggle")
+      assert html =~ ~s(data-part="density-toggle")
+      assert html =~ ~s(data-part="preset-toggle")
+      assert html =~ "API reference"
+    end
+  end
+
+  test "sidebar groups every page under a section, one entry per concept" do
+    html = build_conn() |> get("/docs/foundations/status") |> html_response(200)
+
+    for s <- LanternDemoWeb.Docs.Nav.sections() do
+      assert html =~ (s.title |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string())
+      for p <- s.pages, do: assert(html =~ ~s(href="#{LanternDemoWeb.Docs.Nav.path(p, s)}"), "missing #{p.id}")
+    end
+
+    refute html =~ ~s(href="/components/)
+    assert html =~ ~s(data-part="nav-disclosure")
+    assert html =~ ~s(id="docs-search")
+  end
+
+  test "every docs page renders with the page template (title, description, props or guide)" do
+    for {s, p} <- LanternDemoWeb.Docs.Nav.all_pages(), p.kind in [:members, :static] do
+      html = build_conn() |> get(LanternDemoWeb.Docs.Nav.path(p, s)) |> html_response(200)
+      assert html =~ ~s(class="docs-page-title")
+      assert html =~ p.desc |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()
+    end
+  end
+
+  test "section landings and the docs index list their pages as cards" do
+    index = build_conn() |> get("/docs") |> html_response(200)
+    assert index =~ "docs-cards"
+
+    for s <- LanternDemoWeb.Docs.Nav.sections() do
+      html = build_conn() |> get("/docs/#{s.id}") |> html_response(200)
+      assert html =~ "docs-card"
+      for p <- s.pages, do: assert(html =~ p.title |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string())
+    end
+  end
+
+  test "search index covers every page and merged-page component, with introspected keywords" do
+    conn = build_conn() |> get("/docs/search.json")
+    assert json_response(conn, 200) |> length() >= 80
+    idx = json_response(conn, 200)
+
+    for {s, p} <- LanternDemoWeb.Docs.Nav.all_pages() do
+      assert Enum.any?(idx, &(&1["h"] == LanternDemoWeb.Docs.Nav.path(p, s))), "#{p.id} missing from the index"
+    end
+
+    kw = fn title -> idx |> Enum.find(&(&1["t"] == title)) |> Map.fetch!("k") end
+    assert kw.("Toasts") =~ "toast_group"
+    assert kw.("Data table") =~ "row_navigate"
+    assert kw.("Spacing & stack") =~ "stack"
+    assert kw.("Status & indicators") =~ "progress ring"
+    assert Enum.any?(idx, &(&1["t"] == "Tooltip" and &1["c"] =~ "Popover & tooltip"))
+
+    html = build_conn() |> get("/docs/forms/buttons") |> html_response(200)
+    assert html =~ ~s(id="docs-search")
+    refute html =~ "<dialog"
+  end
+
+  test "legacy /components URLs redirect into the new IA" do
+    for {old, new} <- [
+          {"/components/toast", "/docs/feedback/toasts"},
+          {"/components/state-glyph", "/docs/foundations/status"},
+          {"/components/data-table", "/docs/data-display/data-table"},
+          {"/components/theming", "/docs/getting-started/theming"},
+          {"/components/nope", "/docs"}
+        ] do
+      conn = build_conn() |> get(old)
+      assert redirected_to(conn, 301) == new
+    end
+  end
+
+  test "0.8.2 consolidated attrs are documented on existing pages" do
+    button = build_conn() |> get(doc("button")) |> html_response(200)
+    assert button =~ "Icon buttons with label + kbd"
+    assert button =~ ~s(aria-label="Filter")
+    assert button =~ ~s(aria-label="Display")
+    assert button =~ ~s(aria-label="Promote to ticket")
+
+    tabs = build_conn() |> get(doc("tabs")) |> html_response(200)
+    assert tabs =~ "Standalone pill control"
+    assert tabs =~ ~s(id="dense-scope")
+    assert tabs =~ ~s(role="radiogroup")
+    assert tabs =~ ~s(phx-hook="LanternTabs")
+  end
+
+  test "chat kit controls change the transcript and busy state" do
+    {:ok, view, html} = live(build_conn(), doc("chat-kit"))
+
+    assert html =~ ~s(aria-busy="false")
+    assert anchor_count(html) == 1
+    assert html =~ ~s(data-message-id="chat-7")
+
+    html = view |> element(~s(button[phx-click="chat_append_reply"])) |> render_click()
+    assert html =~ ~s(data-message-id="chat-reply-8")
+    assert anchor_count(html) == 1
+
+    html = view |> element(~s(button[phx-click="chat_toggle_streaming"])) |> render_click()
+    assert html =~ ~s(aria-busy="true")
+    assert html =~ ~s(id="chat-streaming")
+    assert html =~ "Assistant is typing..."
+    assert query_nodes(html, ~s([data-message-id="chat-reply-8"][data-scroll-anchor])) == []
+    assert anchor_count(html) == 1
+
+    html = view |> element(~s(button[phx-click="chat_toggle_streaming"])) |> render_click()
+    assert html =~ ~s(aria-busy="false")
+    assert query_nodes(html, ~s([data-message-id="chat-reply-8"][data-scroll-anchor])) != []
+    assert anchor_count(html) == 1
+
+    html = view |> element(~s(button[phx-click="chat_reset"])) |> render_click()
+    refute html =~ ~s(data-message-id="chat-reply-8")
+    assert query_nodes(html, ~s([data-message-id="chat-7"][data-scroll-anchor])) != []
+    assert html =~ ~s(aria-busy="false")
+    assert anchor_count(html) == 1
+
+    html = view |> element(~s(button[phx-click="chat_append_reply"])) |> render_click()
+    assert html =~ ~s(data-message-id="chat-reply-9")
+    refute html =~ ~s(data-message-id="chat-reply-8")
+    assert anchor_count(html) == 1
+  end
+
+  # The palette filters nothing itself, so these handlers ARE the search.
+  test "toast deck shows burst, actions, flash, placement, and re-render check" do
+    html = build_conn() |> get(doc("toast")) |> html_response(200)
+
+    for fragment <- [
+          "Burst of 6",
+          "With Undo action",
+          "Sticky",
+          "put_flash info",
+          "put_flash error",
+          "Toast then re-render",
+          "set_toast_placement",
+          "top-left",
+          "bottom-center",
+          "collapsed deck"
+        ] do
+      assert html =~ fragment, "missing #{inspect(fragment)} on toast page"
+    end
+  end
+
+  test "toast deck events fire without errors" do
+    {:ok, socket} = mount_components()
+
+    for {event, params} <- [
+          {"demo_toast", %{"kind" => "info"}},
+          {"demo_toast_burst", %{}},
+          {"demo_toast_action", %{}},
+          {"demo_toast_undo", %{}},
+          {"demo_toast_sticky", %{}},
+          {"demo_toast_patch", %{}},
+          {"set_toast_placement", %{"placement" => "bottom-center"}}
+        ] do
+      assert {:noreply, _} =
+               LanternDemoWeb.DocsLive.handle_event(event, params, socket)
+    end
+
+    {:noreply, placed} =
+      LanternDemoWeb.DocsLive.handle_event(
+        "set_toast_placement",
+        %{"placement" => "bottom-center"},
+        socket
+      )
+
+    assert placed.assigns.toast_placement == "bottom-center"
+  end
+
+  test "put_flash buttons bridge into the toast deck" do
+    {:ok, view, _html} = live(build_conn(), doc("toast"))
+
+    html = view |> element(~s(button[phx-click="demo_toast_flash"])) |> render_click()
+    assert html =~ "Flash message via put_flash"
+
+    html = view |> element(~s(button[phx-click="demo_toast_flash_error"])) |> render_click()
+    assert html =~ "Something went wrong (put_flash)"
+  end
+
+  test "select page shows client and server-driven modes" do
+    html = build_conn() |> get(doc("select")) |> html_response(200)
+
+    for fragment <- [
+          "Client mode (default)",
+          "Server-driven (controlled)",
+          "sel-controlled",
+          "controlled_status_changed",
+          "Set active (server)",
+          "Server value:"
+        ] do
+      assert html =~ fragment, "missing #{inspect(fragment)} on select page"
+    end
+  end
+
+  test "controlled select takes client picks and server drives" do
+    {:ok, socket} = mount_components()
+    assert socket.assigns.controlled_status == "active"
+
+    {:noreply, picked} =
+      LanternDemoWeb.DocsLive.handle_event(
+        "controlled_status_changed",
+        %{"id" => "sel-controlled", "value" => ["archived"]},
+        socket
+      )
+
+    assert picked.assigns.controlled_status == "archived"
+
+    {:noreply, driven} =
+      LanternDemoWeb.DocsLive.handle_event(
+        "set_controlled_status",
+        %{"value" => "active"},
+        socket
+      )
+
+    assert driven.assigns.controlled_status == "active"
+  end
+
+  test "command palette search filters and groups the demo command list" do
+    {:ok, socket} = mount_components()
+
+    assert Enum.map(socket.assigns.command_groups, &elem(&1, 0)) ==
+             ["Navigate", "Actions", "Danger zone"]
+
+    {:noreply, navigate} =
+      LanternDemoWeb.DocsLive.handle_event("command_search", %{"query" => "go to"}, socket)
+
+    assert [{"Navigate", items}] = navigate.assigns.command_groups
+    assert Enum.map(items, & &1.value) == ["goto-buttons", "goto-data-table", "goto-theming"]
+    assert navigate.assigns.command_query == "go to"
+
+    {:noreply, empty} =
+      LanternDemoWeb.DocsLive.handle_event("command_search", %{"query" => "zzz"}, socket)
+
+    assert empty.assigns.command_groups == []
+  end
+
+  test "command palette selection is reported back with its label" do
+    {:ok, socket} = mount_components()
+
+    {:noreply, chosen} =
+      LanternDemoWeb.DocsLive.handle_event(
+        "command_select",
+        %{"value" => "new-ticket"},
+        socket
+      )
+
+    assert chosen.assigns.command_selection == {"new-ticket", "Open a new ticket"}
+  end
+
+  test "command palette places separators between groups" do
+    html = build_conn() |> get(doc("command")) |> html_response(200)
+
+    assert html =~ ~r/lui-command-group.*lui-command-separator.*lui-command-group/s
+  end
+
+  test "server-backed autocomplete filters and groups fixed catalog data" do
+    {:ok, socket} = mount_components()
+
+    {:noreply, short} =
+      LanternDemoWeb.DocsLive.handle_event("search_catalog", %{"query" => "z"}, socket)
+
+    assert short.assigns.catalog_options == []
+
+    {:noreply, results} =
+      LanternDemoWeb.DocsLive.handle_event("search_catalog", %{"query" => "zel"}, socket)
+
+    assert results.assigns.catalog_options == [
+             {"Nintendo 64",
+              [
+                {"The Legend of Zelda: Ocarina of Time", "zelda-ocarina"},
+                {"The Legend of Zelda: Majora's Mask", "zelda-majora"}
+              ]},
+             {"Nintendo Switch", [{"The Legend of Zelda: Breath of the Wild", "zelda-botw"}]}
+           ]
+
+    {:noreply, none} =
+      LanternDemoWeb.DocsLive.handle_event(
+        "search_catalog",
+        %{"query" => "missing"},
+        socket
+      )
+
+    assert none.assigns.catalog_options == []
+  end
+
+  test "alert dialog confirmation is harmless and exposes status feedback" do
+    {:ok, socket} = mount_components()
+
+    {:noreply, confirmed} =
+      LanternDemoWeb.DocsLive.handle_event("confirm_demo_revoke", %{}, socket)
+
+    assert confirmed.assigns.alert_dialog_status ==
+             "Demo key revoked — no real credential was changed."
+  end
+
+  test "demo chrome persists the long sidebar position across navigation" do
+    source = File.read!("priv/static/app.js")
+
+    assert source =~ ~s(const SIDEBAR_SCROLL_STORAGE_KEY = "lui-demo-sidebar-scroll")
+    assert source =~ "sessionStorage.setItem("
+    assert source =~ "nav.scrollTop = Number(saved.top)"
+    assert source =~ "nav.scrollLeft = Number(saved.left)"
+    assert source =~ "this.saveSidebarScroll()"
+  end
+
+  test "serves lantern_ui_hooks.js from the Hex lantern_ui package" do
+    hex_path = Application.app_dir(:lantern_ui, "priv/static/lantern_ui_hooks.js")
+    assert File.exists?(hex_path)
+
+    conn = build_conn() |> get("/lantern_ui_hooks.js")
+    assert conn.status == 200
+    assert conn.resp_body != ""
+    assert File.read!(hex_path) == conn.resp_body
+  end
+
+  test "serves the on-demand Zag widget chunks (else no Zag widget initializes)" do
+    for path <- ["zag/tooltip.js", "zag/dialog.js", "zag/select.js"] do
+      conn = build_conn() |> get("/#{path}")
+      assert conn.status == 200, "missing /#{path}"
+      assert conn.resp_body != ""
+    end
+
+    chunks =
+      :lantern_ui
+      |> Application.app_dir("priv/static/chunks")
+      |> File.ls!()
+
+    assert chunks != []
+
+    conn = build_conn() |> get("/chunks/#{hd(chunks)}")
+    assert conn.status == 200
+  end
+
+  defp doc(slug), do: LanternDemoWeb.Docs.Nav.legacy_path(slug)
+
+  defp mount_components do
+    LanternDemoWeb.DocsLive.mount(
+      %{},
+      %{},
+      %Phoenix.LiveView.Socket{assigns: %{__changed__: %{}}}
+    )
+  end
+
+  defp anchor_count(html) do
+    query_nodes(html, "[data-scroll-anchor]") |> length()
+  end
+
+  defp query_nodes(html, selector) do
+    html |> LazyHTML.from_document() |> LazyHTML.query(selector) |> LazyHTML.to_tree()
+  end
+end

@@ -1,92 +1,21 @@
 defmodule LanternDemoWeb.DocsShell do
   @moduledoc """
-  The shared ecosystem shell, built on lantern_ui's own `sidebar_layout`
-  (dogfood): a collapsible sidebar (logo + grouped tool/component nav) beside
-  the page content, with a topbar carrying the collapse toggle, a breadcrumb,
-  and the page's own actions. Both the DB-viewer demo (`/`) and the components
-  reference (`/components/*`) render inside it.
+  The shared docs shell, built on lantern_ui's own `app_shell` (dogfood): a
+  collapsible sidebar of collapsible section groups (from `Docs.Nav`), a
+  breadcrumb header, theme/density/preset toggles, and a Cmd+K docs search.
 
-  `current` picks the highlighted nav item (`"db"` or a component slug). `theme`
-  adds `.dark`; `density` sets the lantern density.
+  `current` is `"docs"`, a section id, or `"section/page"` (see `Docs.Nav`).
   """
   use Phoenix.Component
 
+  alias LanternDemoWeb.Docs.Nav
   alias LanternUI.Components.Breadcrumb
   alias LanternUI.Components.Button
   alias LanternUI.Components.Icon
   alias LanternUI.Components.Layout
   alias LanternUI.Components.Theme
 
-  @component_groups [
-    {"Layout", [{"app-shell", "App shell"}, {"navlist", "Nav list"}]},
-    {"Dense app",
-     [
-       {"list-row", "List row"},
-       {"inspector", "Inspector"},
-       {"state-glyph", "State glyph"},
-       {"side-panel", "Side panel"}
-     ]},
-    {"Theming", [{"theming", "Theming"}]},
-    {"Data",
-     [
-       {"data-table", "Data table"},
-       {"table", "Table"},
-       {"description-list", "Description list"},
-       {"pagination", "Pagination"},
-       {"tabs", "Tabs"},
-       {"select", "Select"},
-       {"badge", "Badge"},
-       {"stat", "Stat cards"}
-     ]},
-    {"Components",
-     [
-       {"button", "Button"},
-       {"icon", "Icon"},
-       {"input", "Input"},
-       {"autocomplete", "Autocomplete"},
-       {"accordion", "Accordion"},
-       {"datetime-field", "Datetime field"},
-       {"calendar", "Calendar"},
-       {"date-picker", "Date & time pickers"},
-       {"popover", "Popover"},
-       {"menu", "Menu and menubar"},
-       {"slider", "Slider"},
-       {"resource-list", "Resource list"},
-       {"color-input", "Color input"},
-       {"progress-meter", "Progress and meter"},
-       {"scroll-area", "Scroll area"},
-       {"checkbox", "Checkbox"},
-       {"modal", "Modal"},
-       {"alert-dialog", "Alert dialog"},
-       {"sheet", "Sheet"},
-       {"dropdown", "Dropdown menu"},
-       {"command", "Command palette"},
-       {"breadcrumb", "Breadcrumb"},
-       {"empty-state", "Empty state"},
-       {"timeline", "Timeline"},
-       {"switch", "Switch"},
-       {"radio", "Radio"},
-       {"textarea", "Textarea"},
-       {"alert", "Alert"},
-       {"loading", "Loading"},
-       {"skeleton", "Skeleton"},
-       {"separator", "Separator"},
-       {"tooltip", "Tooltip"},
-       {"toast", "Toast"}
-     ]},
-    {"Chat", [{"chat-kit", "Chat kit"}]},
-    {"Charts",
-     [
-       {"area-chart", "Area chart"},
-       {"line-chart", "Line chart"},
-       {"bar-chart", "Bar chart"},
-       {"sparkline", "Sparkline"}
-     ]}
-  ]
-
-  def component_groups, do: @component_groups
-
-  @labels Map.new([{"db", "DB viewer"} | Enum.flat_map(@component_groups, fn {_g, i} -> i end)])
+  @suggest ~w(/docs/getting-started/installation /docs/forms/buttons /docs/data-display/tables-lists /docs/data-display/data-table /docs/feedback/toasts /docs/overlays/dialogs /docs/overlays/command /docs/foundations/status /docs/getting-started/theming /blocks/list)
 
   attr(:current, :string, required: true)
   attr(:theme, :string, default: "system")
@@ -95,10 +24,14 @@ defmodule LanternDemoWeb.DocsShell do
   slot(:inner_block, required: true)
 
   def shell(assigns) do
+    {section, page} = locate(assigns.current)
+
     assigns =
       assigns
-      |> assign(:groups, @component_groups)
-      |> assign(:label, Map.get(@labels, assigns.current, "Lantern"))
+      |> assign(:sections, Nav.sections())
+      |> assign(:section, section)
+      |> assign(:page, page)
+      |> assign(:suggest, @suggest)
 
     ~H"""
     <Layout.app_shell
@@ -111,46 +44,102 @@ defmodule LanternDemoWeb.DocsShell do
       </:brand>
       <:header>
         <Breadcrumb.breadcrumb aria_label="Location">
-          <:item>{if @current == "db", do: "Tools", else: "Components"}</:item>
-          <:item current>{@label}</:item>
+          <:item href="/docs">Docs</:item>
+          <:item :if={@section && @page} href={Nav.path(@section)}>{@section.title}</:item>
+          <:item current>{(@page && @page.title) || (@section && @section.title) || "Overview"}</:item>
         </Breadcrumb.breadcrumb>
       </:header>
       <:actions>
         <div id="demo-chrome" phx-hook="DemoChrome" data-shell="lantern-demo-shell" class="demo-chrome">
+          <Button.button variant="outline" size="sm" type="button" data-docs-search-open class="docs-search-btn">
+            <Icon.icon name="magnifying-glass" /> <span>Search docs</span> <kbd>⌘K</kbd>
+          </Button.button>
           <Button.button variant="outline" size="sm" type="button" data-part="theme-toggle">
             <span data-part="theme-label">Dark</span>
           </Button.button>
           <Button.button variant="outline" size="sm" type="button" data-part="density-toggle">
             <span data-part="density-label">Compact</span>
           </Button.button>
+          <Button.button
+            variant="outline"
+            size="sm"
+            type="button"
+            data-part="preset-toggle"
+            title="Toggle the shadcn preset (<Theme.theme preset>)"
+          >
+            <span data-part="preset-label">Default</span>
+          </Button.button>
         </div>
         {render_slot(@actions)}
       </:actions>
 
       <:sidebar>
-        <Layout.nav_group label="Tools">
-          <Layout.nav_item label="DB viewer" icon="circle-stack" navigate="/" active={@current == "db"} />
-          <Layout.nav_item label="S3 viewer" icon="cloud" navigate="/storage" active={@current == "s3"} />
-          <Layout.nav_item label="LiveCode" icon="pencil-square" navigate="/livecode" active={@current == "livecode"} />
-        </Layout.nav_group>
-        <Layout.nav_group :for={{group, items} <- @groups} label={group}>
+        <%!-- One nav_group for everything: a nav_group per section stacked a 16px group
+            margin between every section header (46px pitch instead of ~34px). --%>
+        <Layout.nav_group>
+          <Layout.nav_item label="Overview" icon="squares-2x2" navigate="/docs" active={@current == "docs"} />
           <Layout.nav_item
-            :for={{slug, label} <- items}
-            label={label}
-            icon={icon_for(group, slug)}
-            navigate={"/components/#{slug}"}
-            active={@current == slug}
-          />
+            :for={s <- @sections}
+            label={s.title}
+            icon={s.icon}
+            expanded={@section != nil && @section.id == s.id}
+            active={false}
+          >
+            <:subnav>
+              <Layout.nav_item label="Overview" navigate={Nav.path(s)} active={@current == s.id} />
+              <Layout.nav_item
+                :for={p <- s.pages}
+                label={p.title}
+                navigate={Nav.path(p, s)}
+                active={@current == "#{s.id}/#{p.id}"}
+              />
+            </:subnav>
+          </Layout.nav_item>
         </Layout.nav_group>
       </:sidebar>
 
       <Theme.theme />
+      <%!-- Not a <dialog>: a plain overlay behaves the same in every browser and survives
+          LiveView patches (phx-update="ignore" — the hook owns this subtree). --%>
+      <div
+        id="docs-search"
+        class="docs-search"
+        phx-hook="DocsSearch"
+        phx-update="ignore"
+        data-index="/docs/search.json"
+        data-suggest={Jason.encode!(@suggest)}
+        hidden
+      >
+        <div class="docs-search-backdrop" data-close></div>
+        <div class="docs-search-panel" role="dialog" aria-modal="true" aria-label="Search docs">
+          <input
+            type="text"
+            class="docs-search-input"
+            placeholder="Search components, props, guides, blocks…"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="docs-search-list"
+            aria-label="Search docs"
+          />
+          <div id="docs-search-list" class="docs-search-list" role="listbox"></div>
+          <div class="docs-search-foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+        </div>
+      </div>
       {render_slot(@inner_block)}
     </Layout.app_shell>
 
     <style>
-      .demo-chrome { display: inline-flex; gap: 0.4rem; }
+      .demo-chrome { display: inline-flex; gap: 0.4rem; flex-wrap: wrap; }
       .lui-nav-item-soon { opacity: 0.5; pointer-events: none; }
+      .demo-chrome { flex-wrap: nowrap; }
+      @media (max-width: 720px) {
+        .docs-search-btn span, .docs-search-btn kbd { display: none; }
+        .docs-search-btn { min-width: 0; }
+        .demo-chrome [data-part="density-toggle"], .demo-chrome [data-part="preset-toggle"] { display: none; }
+      }
 
       /* Embedded DB-viewer demo: drop the standalone marketing chrome so it reads
          as a tool page inside the shell. */
@@ -163,58 +152,18 @@ defmodule LanternDemoWeb.DocsShell do
     """
   end
 
-  @icons %{
-    "app-shell" => "view-columns",
-    "list-row" => "bars-3",
-    "inspector" => "information-circle",
-    "state-glyph" => "check-circle",
-    "side-panel" => "window",
-    "description-list" => "bars-3",
-    "theming" => "sparkles",
-    "data-table" => "circle-stack",
-    "table" => "bars-3",
-    "pagination" => "ellipsis-horizontal",
-    "tabs" => "view-columns",
-    "select" => "chevron-up-down",
-    "badge" => "check-circle",
-    "stat" => "chart-bar",
-    "button" => "cursor-arrow-rays",
-    "icon" => "sparkles",
-    "input" => "pencil-square",
-    "autocomplete" => "magnifying-glass",
-    "accordion" => "chevron-down",
-    "datetime-field" => "clock",
-    "calendar" => "calendar",
-    "date-picker" => "calendar-days",
-    "popover" => "window",
-    "menu" => "bars-3",
-    "slider" => "adjustments-horizontal",
-    "resource-list" => "bars-3",
-    "color-input" => "sparkles",
-    "progress-meter" => "chart-bar",
-    "scroll-area" => "arrow-path",
-    "checkbox" => "check-circle",
-    "modal" => "window",
-    "alert-dialog" => "exclamation-circle",
-    "sheet" => "arrow-right",
-    "dropdown" => "chevron-up-down",
-    "breadcrumb" => "chevron-right",
-    "empty-state" => "inbox",
-    "timeline" => "bars-3",
-    "switch" => "check-circle",
-    "radio" => "check-circle",
-    "textarea" => "pencil-square",
-    "alert" => "exclamation-circle",
-    "loading" => "arrow-path",
-    "skeleton" => "view-columns",
-    "separator" => "minus",
-    "tooltip" => "information-circle",
-    "toast" => "inbox",
-    "area-chart" => "chart-bar",
-    "line-chart" => "presentation-chart-line",
-    "bar-chart" => "chart-bar",
-    "sparkline" => "arrow-trending-up"
-  }
+  defp locate("docs"), do: {nil, nil}
 
-  defp icon_for(_group, slug), do: Map.get(@icons, slug, "squares-2x2")
+  defp locate(current) do
+    case String.split(current, "/", parts: 2) do
+      [sid, pid] ->
+        case Nav.page(sid, pid) do
+          {s, p} -> {s, p}
+          nil -> {nil, nil}
+        end
+
+      [sid] ->
+        {Nav.section(sid), nil}
+    end
+  end
 end

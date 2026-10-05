@@ -12,7 +12,20 @@ mix setup
 mix phx.server
 ```
 
-Open <http://localhost:4001>. Component documentation starts at <http://localhost:4001/components>.
+Open <http://localhost:4001>. The docs start at <http://localhost:4001/docs>; the demo app (a ticket tracker built only from lantern components) is at <http://localhost:4001/app> — sign in with `ada@acme.test` / `lantern`.
+
+## Layout
+
+| Where | What |
+|---|---|
+| `lib/lantern_demo_web/docs/nav.ex` | The docs information architecture: sections → pages → component members |
+| `lib/lantern_demo_web/docs/*.ex` | One module per section (`Forms`, `Overlays`, `DataDisplay`, …) holding the page bodies, plus `Page` (template + landing cards), `Kit` (example/code/API-table building blocks) and `Guides` (hand-written pages) |
+| `lib/lantern_demo_web/live/docs_live.ex` | The one LiveView behind `/docs/:section/:page`; owns the shared demo state and the event handlers the previews fire |
+| `lib/lantern_demo_web/components/docs_shell.ex` | Docs chrome: collapsible section groups, breadcrumb, Cmd+K search |
+| `lib/lantern_demo_web/app/` | The `/app` demo: `app_live.ex` (routing, auth gate, palette, toasts), `shell.ex` (Acme chrome) and `pages/*` |
+| `lib/demo_app/store.ex` | In-memory, per-visitor seeded data for `/app` (keyed by a session cookie, pruned after 2 idle hours, capped) |
+
+`/components/:slug` URLs from the old flat catalog redirect to the new pages.
 
 Default database URL:
 
