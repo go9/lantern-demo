@@ -28,7 +28,7 @@ defmodule LanternDemo.MixProject do
       # lantern_ui from git at a pinned main sha (Zag widgets, page blocks, shadcn
       # preset, toast deck, row links). Repin when lantern-ui releases.
       {:lantern_ui,
-       github: "go9/lantern-ui", ref: "ed14a0092ddfa7633e5056a08a2231b9409518b0", override: true},
+       github: "go9/lantern-ui", ref: "2eb99de8d3cf150b622add1fa2b71337a9b66b0b", override: true},
       {:lantern_s3, github: "go9/lantern-s3"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
