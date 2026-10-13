@@ -64,7 +64,7 @@ defmodule LanternDemoWeb.Docs.Kit do
       {Layout, :nav_group},
       {Layout, :nav_item},
       {Layout, :breadcrumb_bar},
-      {Layout, :page_header}
+      {Layout, :page_shell}
     ],
     "navlist" => [{Navlist, :navlist}, {Navlist, :navheading}, {Navlist, :navlink}],
     "table" => [{Table, :table}, {Table, :table_head}, {Table, :table_body}, {Table, :table_row}],

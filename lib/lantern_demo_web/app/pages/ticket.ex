@@ -178,10 +178,12 @@ defmodule LanternDemoWeb.App.Pages.Ticket do
   def render(assigns) do
     ~H"""
     <.stack gap="lg">
-      <.page_header title={@ticket.title} description={"#{@ticket.identifier} · #{Helpers.project_name(@projects, @ticket.project_id)}"} />
       <div class="acme-detail">
         <.stack gap="lg" class="acme-detail-main">
-          <.card title="Description">
+          <.card
+            title="Description"
+            description={"#{@ticket.identifier} · #{Helpers.project_name(@projects, @ticket.project_id)}"}
+          >
             <p :if={@ticket.body != ""} class="acme-body">{@ticket.body}</p>
             <p :if={@ticket.body == ""} class="acme-muted">No description yet.</p>
           </.card>

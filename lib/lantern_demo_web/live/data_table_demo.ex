@@ -130,6 +130,7 @@ defmodule LanternDemoWeb.DataTableDemo do
           Everything below is live against an in-memory dataset.
         </p>
 
+        <%!-- :view is now the saved-views slot; the active layout string is only accepted as a dynamic attr. --%>
         <DataTable.data_table
           id="orders"
           rows={@rows}
@@ -138,7 +139,7 @@ defmodule LanternDemoWeb.DataTableDemo do
           selected_ids={@selected}
           search_field={:q}
           search_placeholder="Search buyer or reference…"
-          view={@view}
+          {%{view: @view}}
           subtitle="57 in-memory orders — every control patches the URL"
           info_modal_id="orders-info"
         >

@@ -61,13 +61,11 @@ defmodule LanternDemoWeb.App.Pages.Project do
 
     ~H"""
     <.stack gap="lg">
-      <.page_header title={@project.name} description={@project.summary}>
-        <:actions>
-          <.progress shape="ring" completed={@done} scope={length(@p_tickets)} label="Progress">
-            {@done}/{length(@p_tickets)}
-          </.progress>
-        </:actions>
-      </.page_header>
+      <.card title="Progress" description={@project.summary}>
+        <.progress shape="ring" completed={@done} scope={length(@p_tickets)} label="Progress">
+          {@done}/{length(@p_tickets)}
+        </.progress>
+      </.card>
       <.stat_grid>
         <:stat label="Tickets" value={length(@p_tickets)} />
         <:stat label="In progress" value={count(@p_tickets, "in_progress")} />

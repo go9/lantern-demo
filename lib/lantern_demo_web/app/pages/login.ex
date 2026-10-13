@@ -82,12 +82,11 @@ defmodule LanternDemoWeb.App.Pages.Login do
       <Theme.theme preset={@appearance.preset} id="acme-theme" />
       <.toast_group id="acme-toasts" placement="bottom-right" flash={@flash} />
       <div class="acme-auth-card">
-        <.card>
+        <.card title="Welcome back" description="Sign in to your workspace.">
           <.stack gap="md">
             <div class="acme-auth-brand">
               <.icon name="sparkles" /> <span class="lui-brand-name">Acme</span>
             </div>
-            <.page_header title="Welcome back" description="Sign in to your workspace." />
             <.alert :if={@login_failed} color="danger" title="Couldn't sign you in">
               That email and password don't match. Try the demo account below.
             </.alert>

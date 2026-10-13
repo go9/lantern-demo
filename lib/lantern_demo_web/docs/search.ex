@@ -14,7 +14,7 @@ defmodule LanternDemoWeb.Docs.Search do
     "foundations/spacing" => [{LanternUI.Components.Layout, :stack}],
     "layout/app-shell" => [
       {LanternUI.Components.Layout, :breadcrumb_bar},
-      {LanternUI.Components.Layout, :page_header}
+      {LanternUI.Components.Layout, :page_shell}
     ]
   }
 
