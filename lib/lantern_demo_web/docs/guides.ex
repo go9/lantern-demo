@@ -143,9 +143,13 @@ defmodule LanternDemoWeb.Docs.Guides do
         </div>
       </section>
       <section class="docs-member">
-        <h2 class="docs-member-title">Page header</h2>
-        <p class="docs-section-desc">Titles come from <code>page_header</code>, never a hand-sized heading.</p>
-        <div class="docs-demo"><Layout.page_header title="Tickets" description="Everything open across your projects." /></div>
+        <h2 class="docs-member-title">Page title</h2>
+        <p class="docs-section-desc">Titles come from <code>page_shell</code> (the last crumb), never a hand-sized heading.</p>
+        <div class="docs-demo">
+          <Layout.page_shell id="guides-title-demo" layout="strip" title="Tickets" breadcrumbs={[%{label: "Workspace", href: "#"}]}>
+            Everything open across your projects.
+          </Layout.page_shell>
+        </div>
       </section>
     </Page.frame>
     """
@@ -172,7 +176,6 @@ defmodule LanternDemoWeb.Docs.Guides do
         description="stack/1 gives a run of children one gap (sm 0.5rem · md 0.75rem · lg 1.25rem) — pages never rely on margins collapsing."
         code={~S'''
         <.stack gap="lg">
-          <.page_header title="Settings" />
           <.card title="Profile">…</.card>
           <.card title="Notifications">…</.card>
         </.stack>

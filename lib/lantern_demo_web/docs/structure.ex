@@ -68,17 +68,29 @@ defmodule LanternDemoWeb.Docs.Structure do
       </Layout.breadcrumb_bar>
     </.demo_section>
     <.demo_section
-      title="Page header"
-      description="A title, supporting description, and right-side actions compose the page header below the breadcrumb."
+      title="Page shell"
+      description="One page identity per route: the last crumb is the page title, the h1 is visually hidden, and actions are descriptor maps on the same row."
       code={~S'''
-      <.page_header title="Projects" description="Manage deployed resources">
-        <:actions><.button>New project</.button></:actions>
-      </.page_header>
+      <.page_shell
+        id="projects-shell"
+        layout="strip"
+        title="Projects"
+        breadcrumbs={[%{label: "Workspace", href: "#"}]}
+        actions={[%{id: "new", label: "New project", icon: "plus", priority: 10}]}
+      >
+        Manage deployed resources.
+      </.page_shell>
       '''}
     >
-      <Layout.page_header title="Projects" description="Manage deployed resources">
-        <:actions><Button.button>New project</Button.button></:actions>
-      </Layout.page_header>
+      <Layout.page_shell
+        id="demo-page-shell"
+        layout="strip"
+        title="Projects"
+        breadcrumbs={[%{label: "Workspace", href: "#"}]}
+        actions={[%{id: "new", label: "New project", icon: "plus", priority: 10}]}
+      >
+        Manage deployed resources.
+      </Layout.page_shell>
     </.demo_section>
     <.demo_section
       title="Overflow"

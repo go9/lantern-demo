@@ -234,10 +234,6 @@ defmodule LanternDemoWeb.BlocksLive do
         %{label: "Acme", path: "/"},
         %{label: "Tickets", path: nil}
       ],
-      detail_crumbs: [
-        %{label: "Tickets", path: "/blocks/list"},
-        %{label: "#241", path: nil}
-      ],
       form_crumbs: [
         %{label: "Tickets", path: "/blocks/list"},
         %{label: "New", path: nil}
@@ -355,9 +351,6 @@ defmodule LanternDemoWeb.BlocksLive do
       <:actions>
         <.avatar size="sm" initials="AL" />
       </:actions>
-      <:breadcrumb>
-        <.breadcrumb home="/" items={@shell_crumbs} />
-      </:breadcrumb>
       <:sidebar>
         <.nav_group label="Workspace">
           <.nav_item label="Dashboard" icon="chart-bar" navigate="/blocks/dashboard" />
@@ -387,17 +380,23 @@ defmodule LanternDemoWeb.BlocksLive do
           </.button>
         </span>
       </div>
-      <.page_header title="Tickets" description="Every request, one flat list.">
-        <:actions>
-          <.button size="sm" variant="solid" navigate="/blocks/form">New ticket</.button>
-        </:actions>
-      </.page_header>
-      <.card title="Getting started" description="Three steps to a finished page.">
-        <p style="margin: 0;">
-          Pick a block from the recipe index, swap the fixture assigns for the host LiveView assigns, and ship.
-        </p>
-        <:footer>Blocks render in the default theme and the shadcn preset — flip the switch up top.</:footer>
-      </.card>
+      <.page_shell
+        id="tickets-shell"
+        layout="strip"
+        title="Tickets"
+        home="/"
+        breadcrumbs={[%{label: "Acme", navigate: "/"}]}
+        actions={[
+          %{id: "new", label: "New ticket", icon: "plus", priority: 10, navigate: "/blocks/form"}
+        ]}
+      >
+        <.card title="Getting started" description="Three steps to a finished page.">
+          <p style="margin: 0;">
+            Pick a block from the recipe index, swap the fixture assigns for the host LiveView assigns, and ship.
+          </p>
+          <:footer>Blocks render in the default theme and the shadcn preset — flip the switch up top.</:footer>
+        </.card>
+      </.page_shell>
     </.app_shell>
     <style>
       .blocks-topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
@@ -419,14 +418,15 @@ defmodule LanternDemoWeb.BlocksLive do
       <h1 :if={@block in ["list", "form"]} class="lui-sr-only">{Map.fetch!(@labels, @block)} block</h1>
       <article :if={@block == "dashboard"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
-        <div style="max-width: 1120px; margin: 0 auto;">
-          <.stack gap="lg">
-            <.page_header title="Dashboard" description="Where the week stands at a glance.">
-              <:actions>
-                <.button size="sm" variant="outline">Export</.button>
-                <.button size="sm" variant="solid" navigate="/blocks/form">New ticket</.button>
-              </:actions>
-            </.page_header>
+        <.page_shell
+          id="dashboard-shell"
+          title="Dashboard"
+          actions={[
+            %{id: "export", label: "Export", icon: "arrow-down-tray", priority: 1},
+            %{id: "new", label: "New ticket", icon: "plus", priority: 10, navigate: "/blocks/form"}
+          ]}
+        >
+          <.stack gap="lg" style="max-width: 1120px; margin: 0 auto;">
             <.stat_grid>
               <:stat :for={stat <- @stats} label={stat.label} value={stat.value} subtitle={stat.subtitle} />
             </.stat_grid>
@@ -463,7 +463,7 @@ defmodule LanternDemoWeb.BlocksLive do
               </.list_row>
             </.card>
           </.stack>
-        </div>
+        </.page_shell>
       </article>
 
       <article :if={@block == "list"} class="docs-body docs-body-wide">
@@ -539,26 +539,27 @@ defmodule LanternDemoWeb.BlocksLive do
 
       <article :if={@block == "detail"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
-        <div style="max-width: 1120px; margin: 0 auto;">
-          <.stack gap="lg">
-            <.breadcrumb_bar id="ticket-crumb">
-              <.breadcrumb home="/" items={@detail_crumbs} />
-              <:actions label="Toggle panel">
-                <.side_panel_toggle
-                  id="ticket-panel-toggle"
-                  panel_id="ticket-panel"
-                  panel_key="ticket"
-                  open={@panel_open}
-                  kbd="]"
-                />
-              </:actions>
-              <:actions label="Edit ticket" navigate="/blocks/form">
-                <.button size="sm" variant="outline" navigate="/blocks/form">Edit</.button>
-              </:actions>
-            </.breadcrumb_bar>
-            <.page_header title={@ticket.title} description={@ticket.identifier} />
+        <.page_shell
+          id="ticket-shell"
+          title={@ticket.title}
+          home="/"
+          breadcrumbs={[%{label: "Tickets", navigate: "/blocks/list"}]}
+          actions={[
+            %{id: "edit", label: "Edit", icon: "pencil-square", priority: 10, navigate: "/blocks/form"}
+          ]}
+        >
+          <.stack gap="lg" style="max-width: 1120px; margin: 0 auto;">
             <div style="display: flex; gap: 1.25rem; align-items: flex-start;">
-              <.card title="Description" style="flex: 1; min-width: 0;">
+              <.card title="Description" description={@ticket.identifier} style="flex: 1; min-width: 0;">
+                <:actions>
+                  <.side_panel_toggle
+                    id="ticket-panel-toggle"
+                    panel_id="ticket-panel"
+                    panel_key="ticket"
+                    open={@panel_open}
+                    kbd="]"
+                  />
+                </:actions>
                 {@ticket.body}
                 <:footer>
                   <.progress
@@ -597,17 +598,13 @@ defmodule LanternDemoWeb.BlocksLive do
               </.side_panel>
             </div>
           </.stack>
-        </div>
+        </.page_shell>
       </article>
 
       <article :if={@block == "settings"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
-        <div style="max-width: 760px; margin: 0 auto;">
-          <.stack gap="lg">
-            <.page_header
-              title="Settings"
-              description="Each section saves on its own — nothing else moves."
-            />
+        <.page_shell id="settings-shell" title="Settings">
+          <.stack gap="lg" style="max-width: 760px; margin: 0 auto;">
             <.card title="Profile" description="How your name appears on tickets and reviews.">
               <.stack gap="md">
                 <.input id="settings-name" name="name" label="Display name" value="Ada Lovelace" />
@@ -667,7 +664,7 @@ defmodule LanternDemoWeb.BlocksLive do
               </:footer>
             </.card>
           </.stack>
-        </div>
+        </.page_shell>
       </article>
 
       <article :if={@block == "form"} class="docs-body docs-body-wide">
@@ -727,13 +724,12 @@ defmodule LanternDemoWeb.BlocksLive do
       <article :if={@block == "login"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
         <div style="max-width: 400px; margin: 3rem auto 0;">
-          <.card>
+          <.card title="Welcome back" description="Sign in to your workspace.">
             <.stack gap="md">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <.icon name="sparkles" />
                 <span class="lui-brand-name">Acme</span>
               </div>
-              <.page_header title="Welcome back" description="Sign in to your workspace." />
               <.input
                 id="login-email"
                 name="email"
@@ -762,12 +758,8 @@ defmodule LanternDemoWeb.BlocksLive do
 
       <article :if={@block == "destructive"} class="docs-body docs-body-wide">
         <p class="docs-eyebrow">Block · copied from lantern-ui recipes</p>
-        <div style="max-width: 1120px; margin: 0 auto;">
-          <.stack gap="lg">
-            <.page_header
-              title="Danger zone"
-              description="Irreversible actions wait behind a confirmation."
-            />
+        <.page_shell id="danger-shell" title="Danger zone">
+          <.stack gap="lg" style="max-width: 1120px; margin: 0 auto;">
             <.card
               title="Delete workspace"
               description="Removes every ticket, inbox item, and invite. This cannot be undone."
@@ -806,7 +798,7 @@ defmodule LanternDemoWeb.BlocksLive do
               </.card>
             </.card_grid>
           </.stack>
-        </div>
+        </.page_shell>
       </article>
     </DocsShell.shell>
     """
