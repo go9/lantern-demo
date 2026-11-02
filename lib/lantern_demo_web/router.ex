@@ -40,7 +40,8 @@ defmodule LanternDemoWeb.Router do
   scope "/", LanternDemoWeb do
     pipe_through(:browser)
 
-    live("/", DemoLive, :index)
+    live("/", DocsLive, :index)
+    live("/db", DemoLive, :index)
     live("/storage", S3DemoLive, :index)
     live("/livecode", LiveCodeDemoLive, :index)
     live("/whats-new", WhatsNewLive)

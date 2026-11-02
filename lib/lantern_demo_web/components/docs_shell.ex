@@ -77,7 +77,7 @@ defmodule LanternDemoWeb.DocsShell do
         <%!-- One nav_group for everything: a nav_group per section stacked a 16px group
             margin between every section header (46px pitch instead of ~34px). --%>
         <Layout.nav_group>
-          <Layout.nav_item label="Overview" icon="squares-2x2" navigate="/docs" active={@current == "docs"} />
+          <Layout.nav_item label="Overview" icon="squares-2x2" navigate="/" active={@current == "docs"} />
           <Layout.nav_item
             :for={s <- @sections}
             label={s.title}

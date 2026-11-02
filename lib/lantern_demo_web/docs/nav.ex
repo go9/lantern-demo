@@ -398,7 +398,7 @@ defmodule LanternDemoWeb.Docs.Nav do
       icon: "folder",
       desc: "The standalone lantern tools, running on sandboxed data.",
       pages: [
-        %{id: "db", title: "DB viewer", desc: "A Postgres table editor.", kind: :live, path: "/"},
+        %{id: "db", title: "DB viewer", desc: "A Postgres table editor.", kind: :live, path: "/db"},
         %{
           id: "s3",
           title: "S3 viewer",
